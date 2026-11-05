@@ -10,8 +10,8 @@
 <script>
 /* ▼▼ Supabase の接続情報：" " の中だけ書き換える ▼▼ */
 window.CONFIG = {
-  SUPABASE_URL: "https://wmacbyjfnkesiqvloiwp.supabase.co",
-  SUPABASE_KEY: "sb_publishable_QmlNduguSqyxp664FL1bZg__Q0HFC8W"
+  SUPABASE_URL: "ここにProject URL",
+  SUPABASE_KEY: "ここにPublishable key"
 };
 /* ▲▲ ここまで ▲▲ */
 </script>
@@ -190,6 +190,7 @@ textarea{resize:vertical;min-height:72px}
 .grp{flex:none;border:1.5px solid #E6E2F5;background:rgba(255,255,255,.85);border-radius:999px;padding:5px 14px;font-weight:700;font-size:13px;color:var(--muted)}
 .grp[aria-pressed="true"]{background:var(--lav);border-color:var(--lav);color:#fff}
 .grp.icon{padding:5px 11px;color:var(--lav);border-style:dashed;border-color:var(--lav)}
+.gpick{display:flex;gap:6px;flex-wrap:wrap}
 .addto{font-size:13px;color:var(--muted)}.addto b{color:var(--lav)}
 .mlist{display:grid;gap:6px;margin:0;padding:0;list-style:none}
 .mlist li{display:flex;align-items:center;gap:8px;background:var(--paper);border-radius:12px;padding:8px 12px;font-size:13px;overflow-wrap:anywhere}
@@ -301,8 +302,7 @@ textarea{resize:vertical;min-height:72px}
       <span id="pickText">タップして画像を選ぶ（複数OK）</span>
     </label>
     <div class="thumbs" id="thumbs"></div>
-    <p class="shot-hint" id="shotHint" hidden>画像をタップすると、拡大・トリミング・スタンプで隠すができます。</p>
-    <p class="addto" id="addTo"></p>
+    <div><span class="lbl">送るグループ</span><div class="gpick" id="gpick"></div></div>
     <div><span class="lbl">カテゴリ</span><div class="cats" id="cats"></div></div>
     <div><span class="lbl">欲しい度</span><div id="ratePick"></div></div>
     <div>
@@ -536,7 +536,7 @@ function renderHome(){
 }
 function renderProfile(uid){
   const pf=S.profiles[uid];const mine=uid===S.me;
-  const posts=S.posts.filter(p=>p.user_id===uid);const pins=posts.filter(p=>p.pinned);
+  const seen=new Set();const posts=S.posts.filter(p=>p.user_id===uid&&!seen.has(p.path)&&seen.add(p.path));const pins=posts.filter(p=>p.pinned);
   $("count").textContent=posts.length+" items";
   const head=$("pfHead");head.textContent="";
   const av=avatar(uid,"lg");head.appendChild(av);
@@ -626,7 +626,7 @@ const edC=$("edCanvas"),edX=edC.getContext("2d");
 function edMarkStamp(){document.querySelectorAll("#edStamps .stamp").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.t===ED.stamp)))}
 function renderThumbs(){const t=$("thumbs");t.textContent="";
   S.files.forEach((f,i)=>{const im=document.createElement("img");im.src=URL.createObjectURL(f);im.alt="タップで編集";im.onclick=()=>openEditor(i);t.appendChild(im)});
-  $("shotHint").hidden=!S.files.length}
+}
 function canvasFrom(src,w,h){const c=document.createElement("canvas");c.width=w;c.height=h;c.getContext("2d").drawImage(src,0,0,w,h);return c}
 async function openEditor(i){
   try{const bmp=await createImageBitmap(S.files[i]);const sc=Math.min(1,1600/Math.max(bmp.width,bmp.height));
@@ -754,24 +754,30 @@ async function toggleReact(pid,e){
   if(error){toast("リアクションできませんでした");scheduleReload()}
 }
 async function updatePost(p,fields,okMsg){
-  const before={};Object.keys(fields).forEach(k=>before[k]=p[k]);Object.assign(p,fields);render();
-  const {error}=await sb.from("posts").update(fields).eq("id",p.id);
-  if(error){Object.assign(p,before);render();toast("変更できませんでした");return}
+  const same=S.posts.filter(x=>x.user_id===S.me&&x.path===p.path);
+  const before={};Object.keys(fields).forEach(k=>before[k]=p[k]);same.forEach(x=>Object.assign(x,fields));render();
+  const {error}=await sb.from("posts").update(fields).eq("user_id",S.me).eq("path",p.path);
+  if(error){same.forEach(x=>Object.assign(x,before));render();toast("変更できませんでした");return}
   if(okMsg)toast(okMsg);
 }
 const togglePin=p=>updatePost(p,{pinned:!p.pinned},p.pinned?"ピン留めを外しました":"プロフィールにピン留めしました");
 const setRating=(p,r)=>updatePost(p,{rating:r});
 async function deletePost(p){
-  const {error}=await sb.from("posts").delete().eq("id",p.id);
+  const {error}=await sb.from("posts").delete().eq("user_id",S.me).eq("path",p.path);
   if(error){toast("削除できませんでした");return}
   await sb.storage.from("shots").remove([p.path]);
-  S.posts=S.posts.filter(x=>x.id!==p.id);render();toast("削除しました");
+  S.posts=S.posts.filter(x=>x.path!==p.path);render();toast("削除しました");
 }
 
 /* ---------- add sheet ---------- */
-$("fab").onclick=()=>{S.files=[];$("thumbs").textContent="";$("shotHint").hidden=true;$("note").value="";$("file").value="";$("pickText").textContent="タップして画像を選ぶ（複数OK）";
+function renderGpick(){const box=$("gpick");box.textContent="";
+  if(!S.groups.length){box.innerHTML='<span class="addto">先に上の「＋ group」でグループを作ってください。</span>';return}
+  S.groups.forEach(g=>{const b=document.createElement("button");b.type="button";b.className="grp";b.textContent=(S.sendGroups.has(g.id)?"✓ ":"")+g.name;
+    b.setAttribute("aria-pressed",String(S.sendGroups.has(g.id)));
+    b.onclick=()=>{S.sendGroups.has(g.id)?S.sendGroups.delete(g.id):S.sendGroups.add(g.id);renderGpick()};box.appendChild(b)})}
+$("fab").onclick=()=>{S.files=[];$("thumbs").textContent="";$("note").value="";$("file").value="";$("pickText").textContent="タップして画像を選ぶ（複数OK）";
   $("ferr").hidden=true;$("submit").disabled=true;$("submit").textContent="追加する";setNewRating(0);
-  const g=S.groups.find(x=>x.id===S.group);$("addTo").innerHTML=g?`追加先のグループ：<b>${esc(g.name)}</b>`:"先に上の「＋ group」でグループを作ってください。";if(S.cat!=="all")setNewCat(S.cat);$("scrim").hidden=false};
+  S.sendGroups=new Set(S.groups.map(g=>g.id));renderGpick();if(S.cat!=="all")setNewCat(S.cat);$("scrim").hidden=false};
 const closeSheet=()=>{$("scrim").hidden=true};
 $("cancel").onclick=closeSheet;$("scrim").addEventListener("click",e=>{if(e.target===$("scrim"))closeSheet()});
 $("file").addEventListener("change",()=>{
@@ -788,7 +794,8 @@ async function shrink(file,max=1600,square=false){
 }
 $("form").addEventListener("submit",async e=>{
   e.preventDefault();if(!S.files.length)return;
-  if(!S.group){$("ferr").textContent="先にグループを作ってください。";$("ferr").hidden=false;return}
+  const gids=[...(S.sendGroups||[])].filter(id=>S.groups.some(g=>g.id===id));
+  if(!gids.length){$("ferr").textContent="送るグループを1つ以上選んでください。";$("ferr").hidden=false;return}
   const btn=$("submit");btn.disabled=true;$("ferr").hidden=true;const note=$("note").value.trim();let done=0;
   try{
     for(const f of S.files){
@@ -796,7 +803,7 @@ $("form").addEventListener("submit",async e=>{
       const {blob,w,h}=await shrink(f);
       const path=S.me+"/"+uuid()+".jpg";
       const up=await sb.storage.from("shots").upload(path,blob,{contentType:"image/jpeg"});if(up.error)throw up.error;
-      const ins=await sb.from("posts").insert({cat:S.newCat,note,path,w,h,rating:S.newRating||null,group_id:S.group});if(ins.error)throw ins.error;
+      const ins=await sb.from("posts").insert(gids.map(group_id=>({cat:S.newCat,note,path,w,h,rating:S.newRating||null,group_id})));if(ins.error)throw ins.error;
       done++;
     }
     closeSheet();toast(done+"枚 追加しました");if(S.cat!=="all"&&S.cat!==S.newCat)S.cat=S.newCat;loadAll();
