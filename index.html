@@ -10,8 +10,8 @@
 <script>
 /* ▼▼ Supabase の接続情報：" " の中だけ書き換える ▼▼ */
 window.CONFIG = {
-  SUPABASE_URL: "https://wmacbyjfnkesiqvloiwp.supabase.co",
-  SUPABASE_KEY: "sb_publishable_QmlNduguSqyxp664FL1bZg__Q0HFC8W"
+  SUPABASE_URL: "ここにProject URL",
+  SUPABASE_KEY: "ここにPublishable key"
 };
 /* ▲▲ ここまで ▲▲ */
 </script>
@@ -64,14 +64,13 @@ header{position:sticky;top:0;z-index:5;padding-block:10px;background:linear-grad
 
 /* ---- feed ---- */
 main{padding-block:8px 130px}
-.feed{columns:2;column-gap:14px}
-@media (min-width:640px){.feed{columns:3}}
-.card{position:relative;break-inside:avoid;margin:10px 0 18px;background:var(--card);border-radius:18px;padding:6px;width:100%;text-align:left;display:block;
+.feed{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 14px;align-items:start}
+.card{position:relative;margin:10px 0 0;background:var(--card);border-radius:18px;padding:6px;width:100%;text-align:left;display:block;
   border:2px solid var(--pink);box-shadow:0 4px 12px rgba(58,53,80,.08);transition:transform .2s}
 .card:nth-child(3n+1){transform:rotate(-1.2deg)}.card:nth-child(3n+2){transform:rotate(1deg)}.card:nth-child(3n){transform:rotate(-.4deg)}
 .card:active{transform:scale(.97)}
 .card .ph{position:relative;border-radius:13px;overflow:hidden;background:var(--paper)}
-.card img.shot{display:block;width:100%;height:auto;max-height:340px;object-fit:cover;object-position:top}
+.card img.shot{display:block;width:100%;height:auto;aspect-ratio:3/4;object-fit:cover;object-position:top}
 .card .who{position:absolute;left:6px;bottom:6px}
 .tape{position:absolute;top:-12px;left:50%;transform:translateX(-50%) rotate(-4deg);background:var(--holo);opacity:.95;
   font-family:var(--hand);font-weight:700;font-size:18px;line-height:1.3;color:var(--lav);padding:0 12px;white-space:nowrap;z-index:1;box-shadow:0 1px 2px rgba(0,0,0,.06)}
@@ -178,12 +177,29 @@ textarea{resize:vertical;min-height:72px}
 .pinrow{display:flex;gap:14px;overflow-x:auto;padding:14px 4px 8px;scroll-snap-type:x mandatory;scrollbar-width:none}
 .pinrow::-webkit-scrollbar{display:none}
 .pinrow .card{flex:none;width:150px;margin:0;scroll-snap-align:start}
-.pinrow .card img.shot{max-height:200px}
+
 .hint{color:var(--muted);font-size:13px;background:rgba(255,255,255,.8);border:2px dashed var(--pink);border-radius:16px;padding:14px;text-align:center;margin-top:10px}
 .back{border:none;background:#fff;border-radius:999px;padding:6px 14px;font-weight:700;color:var(--lav);margin-top:12px;box-shadow:0 1px 0 rgba(58,53,80,.08)}
 .avpick{display:flex;align-items:center;gap:14px}
 .avpick label{border:2px dashed var(--pink);border-radius:999px;padding:8px 16px;color:var(--lav);font-weight:700;cursor:pointer;background:#FFF7FA}
 .avpick input{position:absolute;opacity:0;width:1px;height:1px}
+/* ---- groups / lightbox ---- */
+.groups{display:flex;gap:6px;margin-top:10px;overflow-x:auto;scrollbar-width:none;align-items:center;padding:2px}
+.groups::-webkit-scrollbar{display:none}
+.grp{flex:none;border:1.5px solid #E6E2F5;background:rgba(255,255,255,.85);border-radius:999px;padding:5px 14px;font-weight:700;font-size:13px;color:var(--muted)}
+.grp[aria-pressed="true"]{background:var(--lav);border-color:var(--lav);color:#fff}
+.grp.icon{padding:5px 11px;color:var(--lav);border-style:dashed;border-color:var(--lav)}
+.addto{font-size:13px;color:var(--muted)}.addto b{color:var(--lav)}
+.mlist{display:grid;gap:6px;margin:0;padding:0;list-style:none}
+.mlist li{display:flex;align-items:center;gap:8px;background:var(--paper);border-radius:12px;padding:8px 12px;font-size:13px;overflow-wrap:anywhere}
+.mlist li span{flex:1;min-width:0}
+.mlist button{border:none;background:none;color:var(--muted);font-size:12px;text-decoration:underline}
+.inrow{display:flex;gap:8px}.inrow .tin{flex:1;min-width:0}.inrow .btn{flex:none;padding:10px 16px}
+.thumbs img{cursor:zoom-in}
+.lightbox{position:fixed;inset:0;z-index:50;background:rgba(58,53,80,.85);display:flex;align-items:center;justify-content:center;
+  padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.lightbox img{max-width:100%;max-height:100%;object-fit:contain;border-radius:14px;border:4px solid #fff}
+.lightbox .vclose{position:absolute}
 @media (prefers-reduced-motion:reduce){.pop,.card{transition:none}}
 </style>
 </head>
@@ -197,6 +213,7 @@ textarea{resize:vertical;min-height:72px}
       <button class="logo-btn" id="logoBtn" aria-label="ホームへ"><h1 class="logo">someday list<svg class="doodle" viewBox="0 0 24 24" fill="#FFE27A" stroke="#3A3550" stroke-width="1.4" stroke-linejoin="round"><path d="M12 2.5l2.6 6 6.4.6-4.9 4.2 1.5 6.3L12 16.3 6.4 19.6l1.5-6.3L3 9.1l6.4-.6z"/></svg></h1></button>
       <div style="display:flex;align-items:center;gap:10px"><span class="count" id="count"></span><button class="me-btn" id="meBtn" aria-label="マイページ"></button></div>
     </div>
+    <div class="groups" id="groups" aria-label="グループ"></div>
     <div class="tabs" role="group" aria-label="カテゴリ" id="tabs"></div>
     <div class="people" id="people" aria-label="追加した人"></div>
   </div>
@@ -260,6 +277,7 @@ textarea{resize:vertical;min-height:72px}
       <span id="pickText">タップして画像を選ぶ（複数OK）</span>
     </label>
     <div class="thumbs" id="thumbs"></div>
+    <p class="addto" id="addTo"></p>
     <div><span class="lbl">カテゴリ</span><div class="cats" id="cats"></div></div>
     <div><span class="lbl">欲しい度</span><div id="ratePick"></div></div>
     <div>
@@ -273,6 +291,25 @@ textarea{resize:vertical;min-height:72px}
     </div>
   </form>
 </div>
+
+<div class="scrim" id="gscrim" hidden>
+  <form class="sheet" id="gform" autocomplete="off">
+    <h2 id="gtitle">group</h2>
+    <div><label class="lbl" for="gname">グループ名</label><input class="tin" type="text" id="gname" maxlength="20" required placeholder="例：ふたり／仲良し3人"></div>
+    <div id="gmembersBox">
+      <span class="lbl">メンバー</span>
+      <ul class="mlist" id="gmembers"></ul>
+      <div class="inrow" style="margin-top:8px"><input class="tin" type="email" id="gemail" placeholder="追加する人のメールアドレス"><button type="button" class="btn pri" id="gadd">追加</button></div>
+    </div>
+    <div class="err" id="gerr" hidden></div>
+    <div class="row">
+      <button type="button" class="btn sec" id="gcancel">閉じる</button>
+      <button type="submit" class="btn pri" id="gsave">保存する</button>
+    </div>
+  </form>
+</div>
+
+<div class="lightbox" id="lightbox" hidden><img id="lbImg" alt="選んだ画像"><button type="button" class="vclose" aria-label="閉じる">×</button></div>
 
 <div class="scrim" id="pscrim" hidden>
   <form class="sheet" id="pform" autocomplete="off">
@@ -302,7 +339,8 @@ const QUICK=["❤️","🥹","🤩","👀"];   /* すぐ押せるリアクショ
 const COLORS=["#8E7BEF","#F28DB2","#5CC3B8","#F5A54A","#6AA8F0","#B48CE0"];
 /* ============================================================ */
 
-const S={posts:[],reacts:[],profiles:{},urls:{},cat:"all",person:"all",me:null,files:[],newCat:"want",newRating:0,vlist:[],color:COLORS[0],view:"home",avatarFile:null};
+const S={posts:[],reacts:[],profiles:{},urls:{},cat:"all",person:"all",me:null,files:[],newCat:"want",newRating:0,vlist:[],color:COLORS[0],view:"home",avatarFile:null,groups:[],gm:[],group:null,myEmail:""};
+try{S.group=localStorage.getItem("sl_group")}catch(e){}
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const catHTML=c=>CATS[c]?(CATS[c].img?`<img src="${esc(CATS[c].img)}" alt="${esc(CATS[c].label)}">`:esc(CATS[c].label)):"";
@@ -360,7 +398,7 @@ $("setupForm").addEventListener("submit",async e=>{e.preventDefault();
 async function boot(){
   const {data:{session}}=await sb.auth.getSession();
   if(!session){show("login");return}
-  S.me=session.user.id;
+  S.me=session.user.id;S.myEmail=(session.user.email||"").toLowerCase();
   const {data:prof}=await sb.from("profiles").select("*").eq("id",S.me).maybeSingle();
   if(!prof){show("setup");return}
   startApp();
@@ -369,8 +407,11 @@ sb.auth.onAuthStateChange(ev=>{if(ev==="SIGNED_IN"&&!S.me)boot()});
 
 /* ---------- data ---------- */
 async function loadAll(){
-  const [p,r,pr]=await Promise.all([sb.from("posts").select("*").order("created_at",{ascending:false}),sb.from("reactions").select("*"),sb.from("profiles").select("*")]);
+  const [p,r,pr,g,gm]=await Promise.all([sb.from("posts").select("*").order("created_at",{ascending:false}),sb.from("reactions").select("*"),sb.from("profiles").select("*"),
+    sb.from("groups").select("*").order("created_at"),sb.from("group_members").select("*")]);
   if(p.error){$("status").textContent="読み込めませんでした（"+p.error.message+"）";return}
+  S.groups=g.data||[];S.gm=gm.data||[];
+  if(!S.groups.some(x=>x.id===S.group))setGroup(S.groups[0]?S.groups[0].id:null,true);
   S.posts=p.data||[];S.reacts=r.data||[];S.profiles={};(pr.data||[]).forEach(x=>S.profiles[x.id]=x);
   const need=[...S.posts.map(x=>x.path),...(pr.data||[]).map(x=>x.avatar_path).filter(Boolean)].filter(x=>!S.urls[x]);
   if(need.length){const {data}=await sb.storage.from("shots").createSignedUrls(need,60*60*6);(data||[]).forEach(d=>{if(d.signedUrl)S.urls[d.path]=d.signedUrl})}
@@ -397,12 +438,12 @@ const goProfile=id=>{location.hash=id===S.me?"me":"user-"+id};
 $("logoBtn").onclick=()=>{location.hash=""};
 $("meBtn").onclick=()=>goProfile(S.me);
 
-function filtered(){return S.posts.filter(p=>(S.cat==="all"||p.cat===S.cat)&&(S.person==="all"||p.user_id===S.person))}
+function filtered(){return S.posts.filter(p=>p.group_id===S.group&&(S.cat==="all"||p.cat===S.cat)&&(S.person==="all"||p.user_id===S.person))}
 function reactCounts(pid){const m=new Map();for(const r of S.reacts)if(r.post_id===pid)m.set(r.emoji,(m.get(r.emoji)||0)+1);return m}
 function myReact(pid,e){return S.reacts.some(r=>r.post_id===pid&&r.emoji===e&&r.user_id===S.me)}
 
 function renderPeople(){
-  const box=$("people");box.textContent="";const ids=[...new Set(S.posts.map(p=>p.user_id))];
+  const box=$("people");box.textContent="";const ids=[...new Set(S.posts.filter(p=>p.group_id===S.group).map(p=>p.user_id))];
   const mk=(id,label,av)=>{const b=document.createElement("button");b.className="person";b.setAttribute("aria-pressed",String(S.person===id));
     b.appendChild(av);const s=document.createElement("span");s.textContent=label;b.appendChild(s);b.onclick=()=>{S.person=id;render()};box.appendChild(b)};
   const all=document.createElement("span");all.className="av all";all.textContent="★";mk("all","everyone",all);
@@ -426,18 +467,29 @@ function makeCard(p,list,i){
 }
 function render(){
   const home=S.view==="home";
-  $("home").hidden=!home;$("profile").hidden=home;$("tabs").hidden=!home;$("people").hidden=!home;
+  $("home").hidden=!home;$("profile").hidden=home;$("tabs").hidden=!home;$("people").hidden=!home;$("groups").hidden=!home;
   const meBtn=$("meBtn");meBtn.textContent="";if(S.me){meBtn.appendChild(avatar(S.me))}
   if(home)renderHome();else renderProfile(S.view);
   if(!$("viewer").hidden)refreshViewerCaps();
 }
+function renderGroups(){
+  const box=$("groups");box.textContent="";
+  S.groups.forEach(g=>{const b=document.createElement("button");b.className="grp";b.textContent=g.name;b.setAttribute("aria-pressed",String(g.id===S.group));
+    b.onclick=()=>{if(g.id===S.group)openGroupSheet(g);else{setGroup(g.id);S.person="all";render()}};box.appendChild(b)});
+  if(S.group){const s=document.createElement("button");s.className="grp icon";s.textContent="⚙";s.setAttribute("aria-label","グループの設定");s.onclick=()=>openGroupSheet(S.groups.find(x=>x.id===S.group));box.appendChild(s)}
+  const n=document.createElement("button");n.className="grp icon";n.textContent="＋ group";n.onclick=()=>openGroupSheet(null);box.appendChild(n);
+}
+function setGroup(id,quiet){S.group=id;try{id?localStorage.setItem("sl_group",id):localStorage.removeItem("sl_group")}catch(e){}}
 function renderHome(){
+  renderGroups();
   document.querySelectorAll("#tabs .tab").forEach(t=>t.setAttribute("aria-pressed",String(t.dataset.cat===S.cat)));
   renderPeople();const list=filtered();$("count").textContent=list.length+" items";
   const feed=$("feed");feed.textContent="";
   list.forEach((p,i)=>feed.appendChild(makeCard(p,list,i)));
   const em=$("empty");em.hidden=list.length>0;
-  if(S.posts.length&&!list.length)em.innerHTML="<b>nothing here</b>タブや人を切り替えてみてください。";
+  if(!S.group)em.innerHTML="<b>make a group!</b>上の「＋ group」からグループを作りましょう。";
+  else if(S.posts.some(p=>p.group_id===S.group)&&!list.length)em.innerHTML="<b>nothing here</b>タブや人を切り替えてみてください。";
+  else em.innerHTML="<b>nothing yet!</b>気になったもののスクショを<br>右下の「+ add」から入れてみましょう。";
 }
 function renderProfile(uid){
   const pf=S.profiles[uid];const mine=uid===S.me;
@@ -487,6 +539,43 @@ $("pform").addEventListener("submit",async e=>{e.preventDefault();
   }catch(err){$("perr").textContent="保存できませんでした（"+(err.message||"エラー")+"）";$("perr").hidden=false}
   btn.disabled=false;btn.textContent="保存する";
 });
+
+/* ---------- groups ---------- */
+let gEditing=null;
+function openGroupSheet(g){
+  gEditing=g;$("gerr").hidden=true;$("gemail").value="";
+  $("gtitle").textContent=g?"group":"new group";$("gname").value=g?g.name:"";
+  $("gmembersBox").hidden=!g;$("gsave").textContent=g?"保存する":"作成する";
+  renderGM();$("gscrim").hidden=false;
+}
+function renderGM(){
+  const ul=$("gmembers");ul.textContent="";if(!gEditing)return;
+  S.gm.filter(m=>m.group_id===gEditing.id).forEach(m=>{const li=document.createElement("li");const sp=document.createElement("span");
+    sp.textContent=m.email+(m.email.toLowerCase()===S.myEmail?"（自分）":"");li.appendChild(sp);
+    if(m.email.toLowerCase()!==S.myEmail){const x=document.createElement("button");x.type="button";x.textContent="外す";
+      x.onclick=async()=>{const {error}=await sb.from("group_members").delete().match({group_id:m.group_id,email:m.email});
+        if(error){gErr(error)}else{S.gm=S.gm.filter(y=>y!==m);renderGM()}};li.appendChild(x)}
+    ul.appendChild(li)});
+}
+function gErr(err){$("gerr").textContent="できませんでした（"+(err.message||"エラー")+"）";$("gerr").hidden=false}
+$("gadd").onclick=async()=>{
+  const email=$("gemail").value.trim().toLowerCase();if(!/^\S+@\S+\.\S+$/.test(email)){gErr({message:"メールアドレスを確認してください"});return}
+  const {error}=await sb.from("group_members").insert({group_id:gEditing.id,email});
+  if(error){gErr(error);return}
+  S.gm.push({group_id:gEditing.id,email});$("gemail").value="";$("gerr").hidden=true;renderGM();toast("追加しました");
+};
+$("gcancel").onclick=()=>{$("gscrim").hidden=true};
+$("gscrim").addEventListener("click",e=>{if(e.target===$("gscrim"))$("gscrim").hidden=true});
+$("gform").addEventListener("submit",async e=>{e.preventDefault();
+  const name=$("gname").value.trim();if(!name)return;
+  if(gEditing){const {error}=await sb.from("groups").update({name}).eq("id",gEditing.id);if(error){gErr(error);return}gEditing.name=name}
+  else{const {data,error}=await sb.rpc("create_group",{gname:name});if(error){gErr(error);return}setGroup(data);S.person="all";toast("グループを作りました")}
+  $("gscrim").hidden=true;loadAll();
+});
+
+/* ---------- lightbox ---------- */
+function openLightbox(src){$("lbImg").src=src;$("lightbox").hidden=false}
+$("lightbox").addEventListener("click",()=>{$("lightbox").hidden=true});
 
 /* ---------- viewer ---------- */
 let vIndex=0;
@@ -577,12 +666,13 @@ async function deletePost(p){
 
 /* ---------- add sheet ---------- */
 $("fab").onclick=()=>{S.files=[];$("thumbs").textContent="";$("note").value="";$("file").value="";$("pickText").textContent="タップして画像を選ぶ（複数OK）";
-  $("ferr").hidden=true;$("submit").disabled=true;$("submit").textContent="追加する";setNewRating(0);if(S.cat!=="all")setNewCat(S.cat);$("scrim").hidden=false};
+  $("ferr").hidden=true;$("submit").disabled=true;$("submit").textContent="追加する";setNewRating(0);
+  const g=S.groups.find(x=>x.id===S.group);$("addTo").innerHTML=g?`追加先のグループ：<b>${esc(g.name)}</b>`:"先に上の「＋ group」でグループを作ってください。";if(S.cat!=="all")setNewCat(S.cat);$("scrim").hidden=false};
 const closeSheet=()=>{$("scrim").hidden=true};
 $("cancel").onclick=closeSheet;$("scrim").addEventListener("click",e=>{if(e.target===$("scrim"))closeSheet()});
 $("file").addEventListener("change",()=>{
   S.files=[...$("file").files].filter(f=>f.type.startsWith("image/"));
-  const t=$("thumbs");t.textContent="";S.files.forEach(f=>{const i=document.createElement("img");i.src=URL.createObjectURL(f);i.alt="";t.appendChild(i)});
+  const t=$("thumbs");t.textContent="";S.files.forEach(f=>{const i=document.createElement("img");i.src=URL.createObjectURL(f);i.alt="タップで拡大";i.onclick=()=>openLightbox(i.src);t.appendChild(i)});
   $("pickText").textContent=S.files.length?S.files.length+"枚選択中（タップで選び直し）":"タップして画像を選ぶ（複数OK）";$("submit").disabled=!S.files.length});
 async function shrink(file,max=1600,square=false){
   try{const bmp=await createImageBitmap(file);
@@ -594,6 +684,7 @@ async function shrink(file,max=1600,square=false){
 }
 $("form").addEventListener("submit",async e=>{
   e.preventDefault();if(!S.files.length)return;
+  if(!S.group){$("ferr").textContent="先にグループを作ってください。";$("ferr").hidden=false;return}
   const btn=$("submit");btn.disabled=true;$("ferr").hidden=true;const note=$("note").value.trim();let done=0;
   try{
     for(const f of S.files){
@@ -601,7 +692,7 @@ $("form").addEventListener("submit",async e=>{
       const {blob,w,h}=await shrink(f);
       const path=S.me+"/"+uuid()+".jpg";
       const up=await sb.storage.from("shots").upload(path,blob,{contentType:"image/jpeg"});if(up.error)throw up.error;
-      const ins=await sb.from("posts").insert({cat:S.newCat,note,path,w,h,rating:S.newRating||null});if(ins.error)throw ins.error;
+      const ins=await sb.from("posts").insert({cat:S.newCat,note,path,w,h,rating:S.newRating||null,group_id:S.group});if(ins.error)throw ins.error;
       done++;
     }
     closeSheet();toast(done+"枚 追加しました");if(S.cat!=="all"&&S.cat!==S.newCat)S.cat=S.newCat;loadAll();
