@@ -10,8 +10,8 @@
 <script>
 /* ▼▼ Supabase の接続情報：" " の中だけ書き換える ▼▼ */
 window.CONFIG = {
-  SUPABASE_URL: "https://wmacbyjfnkesiqvloiwp.supabase.co",
-  SUPABASE_KEY: "sb_publishable_QmlNduguSqyxp664FL1bZg__Q0HFC8W"
+  SUPABASE_URL: "ここにProject URL",
+  SUPABASE_KEY: "ここにPublishable key"
 };
 /* ▲▲ ここまで ▲▲ */
 </script>
@@ -105,6 +105,7 @@ main{padding-block:8px 130px}
 .rbtn{border:1.5px solid #E6E2F5;background:#fff;border-radius:999px;padding:4px 10px;font-size:16px;display:flex;gap:4px;align-items:center;font-variant-numeric:tabular-nums}
 .rbtn[aria-pressed="true"]{background:#F1EDFF;border-color:var(--lav)}
 .rbtn small{font-size:12px;color:var(--muted)}
+.rbtn.ro{cursor:default}
 .rbtn.plus{font-size:15px;color:var(--lav);font-weight:700;border-style:dashed;border-color:var(--lav)}
 .emoji-in{width:4.5em;border:1.5px solid var(--lav);border-radius:999px;padding:4px 10px;font-size:16px;text-align:center}
 .del{margin-left:auto;border:none;background:none;color:var(--muted);font-size:12px;text-decoration:underline}
@@ -127,8 +128,8 @@ main{padding-block:8px 130px}
 .pick input{position:absolute;opacity:0;width:1px;height:1px}
 .thumbs{display:flex;gap:8px;overflow-x:auto}
 .thumbs img{height:110px;border-radius:10px;flex:none}
-.cats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.cat{border:2px solid #EEE;background:#fff;border-radius:12px;padding:4px;font-family:var(--hand);font-weight:700;font-size:22px;color:var(--muted)}
+.cats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.cat{border:2px solid #EEE;background:#fff;border-radius:12px;padding:4px 2px;font-family:var(--hand);font-weight:700;font-size:20px;color:var(--muted);white-space:nowrap}
 .cat[aria-pressed="true"]{background:var(--holo);border-color:var(--lav);color:var(--lav)}
 textarea,.tin,.auth input[type=email],.auth input[type=text]{width:100%;border:2px solid #EAE6F7;border-radius:14px;padding:10px 12px;font:inherit;font-size:16px;background:#FCFBFF;color:var(--ink)}
 textarea{resize:vertical;min-height:72px}
@@ -200,6 +201,29 @@ textarea{resize:vertical;min-height:72px}
   padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
 .lightbox img{max-width:100%;max-height:100%;object-fit:contain;border-radius:14px;border:4px solid #fff}
 .lightbox .vclose{position:absolute}
+/* ---- image editor ---- */
+.editor{position:fixed;inset:0;z-index:50;background:#2E2A40;display:flex;flex-direction:column;color:#fff;
+  padding:env(safe-area-inset-top,0px) max(12px,env(safe-area-inset-right,0px)) env(safe-area-inset-bottom,0px) max(12px,env(safe-area-inset-left,0px))}
+.ed-top{display:flex;align-items:center;justify-content:space-between;padding-block:10px;gap:8px}
+.ed-top .ttl{font-family:var(--hand);font-size:28px;color:#fff}
+.ed-btn{border:none;border-radius:999px;padding:8px 16px;font-weight:700;font-size:14px;background:rgba(255,255,255,.14);color:#fff}
+.ed-btn.pri{background:var(--lav)}
+.ed-btn:disabled{opacity:.4}
+.ed-stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:6px 0}
+#edCanvas{max-width:100%;max-height:100%;border-radius:10px;touch-action:none;background:#fff}
+.ed-tools{display:grid;gap:10px;padding-block:10px 14px}
+.ed-modes{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ed-mode{border:1.5px solid rgba(255,255,255,.25);background:none;color:#fff;border-radius:14px;padding:9px;font-weight:700;font-size:14px}
+.ed-mode[aria-pressed="true"]{background:#fff;color:var(--ink);border-color:#fff}
+.ed-panel{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-height:44px}
+.ed-hint{font-size:12px;color:rgba(255,255,255,.75);flex:1;min-width:0}
+.stamp{width:44px;height:44px;border-radius:12px;border:1.5px solid rgba(255,255,255,.25);background:none;font-size:24px;display:grid;place-items:center;padding:0}
+.stamp[aria-pressed="true"]{background:rgba(255,255,255,.95)}
+.stamp .bar{display:block;width:30px;height:12px;border-radius:6px}
+.ed-size{flex:1;min-width:120px;accent-color:var(--lav)}
+.ed-bottom{display:flex;gap:8px}
+.ed-bottom .ed-btn{flex:1}
+.shot-hint{font-size:12px;color:var(--muted);margin:-6px 0 0}
 @media (prefers-reduced-motion:reduce){.pop,.card{transition:none}}
 </style>
 </head>
@@ -277,6 +301,7 @@ textarea{resize:vertical;min-height:72px}
       <span id="pickText">タップして画像を選ぶ（複数OK）</span>
     </label>
     <div class="thumbs" id="thumbs"></div>
+    <p class="shot-hint" id="shotHint" hidden>画像をタップすると、拡大・トリミング・スタンプで隠すができます。</p>
     <p class="addto" id="addTo"></p>
     <div><span class="lbl">カテゴリ</span><div class="cats" id="cats"></div></div>
     <div><span class="lbl">欲しい度</span><div id="ratePick"></div></div>
@@ -309,7 +334,24 @@ textarea{resize:vertical;min-height:72px}
   </form>
 </div>
 
-<div class="lightbox" id="lightbox" hidden><img id="lbImg" alt="選んだ画像"><button type="button" class="vclose" aria-label="閉じる">×</button></div>
+<div class="editor" id="editor" hidden>
+  <div class="ed-top"><button type="button" class="ed-btn" id="edCancel">やめる</button><span class="ttl">edit</span><button type="button" class="ed-btn pri" id="edDone">完了</button></div>
+  <div class="ed-stage"><canvas id="edCanvas"></canvas></div>
+  <div class="ed-tools">
+    <div class="ed-modes">
+      <button type="button" class="ed-mode" data-mode="crop" aria-pressed="false">✂️ トリミング</button>
+      <button type="button" class="ed-mode" data-mode="stamp" aria-pressed="false">🙈 スタンプで隠す</button>
+    </div>
+    <div class="ed-panel" id="edPanelNone"><span class="ed-hint">拡大して確認できます。切り取りたいときや、名前・番号などを隠したいときは上のボタンを選んでください。</span></div>
+    <div class="ed-panel" id="edPanelCrop" hidden><span class="ed-hint">残したい範囲を指でなぞって選びます</span><button type="button" class="ed-btn pri" id="edCropApply" disabled>切り取る</button></div>
+    <div class="ed-panel" id="edPanelStamp" hidden>
+      <div style="display:flex;gap:6px;flex-wrap:wrap" id="edStamps"></div>
+      <input type="range" class="ed-size" id="edSize" min="4" max="50" value="18" aria-label="スタンプの大きさ">
+      <span class="ed-hint" style="flex-basis:100%">隠したい所をタップ。指を動かすと位置を調整できます。</span>
+    </div>
+    <div class="ed-bottom"><button type="button" class="ed-btn" id="edUndo">ひとつ戻す</button><button type="button" class="ed-btn" id="edReset">最初に戻す</button></div>
+  </div>
+</div>
 
 <div class="scrim" id="pscrim" hidden>
   <form class="sheet" id="pform" autocomplete="off">
@@ -332,6 +374,7 @@ textarea{resize:vertical;min-height:72px}
    label：表示名。手書き画像ができたら img に画像ファイル名を入れる（例 "things.png"） */
 const CATS={
   want:{label:"Things", img:""},
+  wear:{label:"Clothes",img:""},
   go:  {label:"Places", img:""},
   eat: {label:"Yummy",  img:""}
 };
@@ -573,9 +616,67 @@ $("gform").addEventListener("submit",async e=>{e.preventDefault();
   $("gscrim").hidden=true;loadAll();
 });
 
-/* ---------- lightbox ---------- */
-function openLightbox(src){$("lbImg").src=src;$("lightbox").hidden=false}
-$("lightbox").addEventListener("click",()=>{$("lightbox").hidden=true});
+/* ---------- image editor (crop & stamps) ---------- */
+const STAMPS=["🙈","⭐️","💜","🌸","🍓","bar:#8E7BEF","bar:#F28DB2","bar:#3A3550"];
+const ED={idx:-1,base:null,stamps:[],hist:[],mode:null,rect:null,drag:null,stamp:STAMPS[0],frac:.18,sel:null};
+const edC=$("edCanvas"),edX=edC.getContext("2d");
+(function(){const box=$("edStamps");STAMPS.forEach(t=>{const b=document.createElement("button");b.type="button";b.className="stamp";b.dataset.t=t;
+  if(t.startsWith("bar:")){const i=document.createElement("span");i.className="bar";i.style.background=t.slice(4);b.appendChild(i);b.setAttribute("aria-label","塗りつぶしバー")}else b.textContent=t;
+  b.onclick=()=>{ED.stamp=t;ED.sel=null;edMarkStamp()};box.appendChild(b)});edMarkStamp()})();
+function edMarkStamp(){document.querySelectorAll("#edStamps .stamp").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.t===ED.stamp)))}
+function renderThumbs(){const t=$("thumbs");t.textContent="";
+  S.files.forEach((f,i)=>{const im=document.createElement("img");im.src=URL.createObjectURL(f);im.alt="タップで編集";im.onclick=()=>openEditor(i);t.appendChild(im)});
+  $("shotHint").hidden=!S.files.length}
+function canvasFrom(src,w,h){const c=document.createElement("canvas");c.width=w;c.height=h;c.getContext("2d").drawImage(src,0,0,w,h);return c}
+async function openEditor(i){
+  try{const bmp=await createImageBitmap(S.files[i]);const sc=Math.min(1,1600/Math.max(bmp.width,bmp.height));
+    ED.base=canvasFrom(bmp,Math.round(bmp.width*sc),Math.round(bmp.height*sc));}catch(e){toast("この画像は編集できませんでした");return}
+  Object.assign(ED,{idx:i,stamps:[],hist:[],rect:null,drag:null,sel:null});edMode(null);$("editor").hidden=false;edDraw();
+}
+function edMode(m){ED.mode=m;ED.rect=null;$("edCropApply").disabled=true;
+  document.querySelectorAll(".ed-mode").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.mode===m)));
+  $("edPanelNone").hidden=!!m;$("edPanelCrop").hidden=m!=="crop";$("edPanelStamp").hidden=m!=="stamp";edDraw()}
+document.querySelectorAll(".ed-mode").forEach(b=>b.onclick=()=>edMode(ED.mode===b.dataset.mode?null:b.dataset.mode));
+function drawStamp(x,s){
+  if(s.t.startsWith("bar:")){const w=s.size*2.6,h=s.size*.8,r=h/2,l=s.x-w/2,tp=s.y-h/2;x.fillStyle=s.t.slice(4);x.beginPath();
+    x.moveTo(l+r,tp);x.arcTo(l+w,tp,l+w,tp+h,r);x.arcTo(l+w,tp+h,l,tp+h,r);x.arcTo(l,tp+h,l,tp,r);x.arcTo(l,tp,l+w,tp,r);x.closePath();x.fill();}
+  else{x.font=`${s.size}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`;x.textAlign="center";x.textBaseline="middle";x.fillText(s.t,s.x,s.y)}
+}
+function edComposite(){const c=canvasFrom(ED.base,ED.base.width,ED.base.height);const x=c.getContext("2d");ED.stamps.forEach(s=>drawStamp(x,s));return c}
+function edDraw(){
+  if(!ED.base)return;edC.width=ED.base.width;edC.height=ED.base.height;
+  edX.drawImage(ED.base,0,0);ED.stamps.forEach(s=>drawStamp(edX,s));
+  const r=ED.rect;if(ED.mode==="crop"&&r&&r.w>2&&r.h>2){
+    edX.fillStyle="rgba(20,18,30,.55)";edX.beginPath();edX.rect(0,0,edC.width,edC.height);edX.rect(r.x,r.y,r.w,r.h);edX.fill("evenodd");
+    edX.strokeStyle="#fff";edX.lineWidth=Math.max(2,edC.width/250);edX.setLineDash([edX.lineWidth*4,edX.lineWidth*3]);edX.strokeRect(r.x,r.y,r.w,r.h);edX.setLineDash([])}
+  $("edUndo").disabled=!ED.stamps.length&&!ED.hist.length;$("edReset").disabled=$("edUndo").disabled;
+}
+function edPos(e){const b=edC.getBoundingClientRect();return {x:(e.clientX-b.left)*edC.width/b.width,y:(e.clientY-b.top)*edC.height/b.height}}
+edC.addEventListener("pointerdown",e=>{if(!ED.mode)return;e.preventDefault();edC.setPointerCapture(e.pointerId);const p=edPos(e);
+  if(ED.mode==="crop"){ED.drag={x:p.x,y:p.y};ED.rect={x:p.x,y:p.y,w:0,h:0}}
+  else{const s={t:ED.stamp,x:p.x,y:p.y,size:ED.frac*ED.base.width};ED.stamps.push(s);ED.drag=s;ED.sel=s}
+  edDraw()});
+edC.addEventListener("pointermove",e=>{if(!ED.drag)return;const p=edPos(e);
+  const cx=Math.max(0,Math.min(edC.width,p.x)),cy=Math.max(0,Math.min(edC.height,p.y));
+  if(ED.mode==="crop"){const d=ED.drag;ED.rect={x:Math.min(d.x,cx),y:Math.min(d.y,cy),w:Math.abs(cx-d.x),h:Math.abs(cy-d.y)}}
+  else{ED.drag.x=cx;ED.drag.y=cy}
+  edDraw()});
+const edUp=()=>{if(ED.mode==="crop"){const r=ED.rect;const ok=r&&r.w>edC.width*.05&&r.h>edC.height*.05;if(!ok)ED.rect=null;$("edCropApply").disabled=!ok;edDraw()}ED.drag=null};
+edC.addEventListener("pointerup",edUp);edC.addEventListener("pointercancel",edUp);
+$("edSize").addEventListener("input",()=>{ED.frac=$("edSize").value/100;if(ED.sel){ED.sel.size=ED.frac*ED.base.width;edDraw()}});
+$("edCropApply").onclick=()=>{const r=ED.rect;if(!r)return;
+  ED.hist.push({base:ED.base,stamps:ED.stamps});const comp=edComposite();
+  const c=document.createElement("canvas");c.width=Math.round(r.w);c.height=Math.round(r.h);c.getContext("2d").drawImage(comp,r.x,r.y,r.w,r.h,0,0,c.width,c.height);
+  ED.base=c;ED.stamps=[];ED.sel=null;ED.rect=null;$("edCropApply").disabled=true;edDraw()};
+$("edUndo").onclick=()=>{if(ED.stamps.length){ED.stamps.pop();ED.sel=null}else if(ED.hist.length){const h=ED.hist.pop();ED.base=h.base;ED.stamps=h.stamps}edDraw()};
+$("edReset").onclick=()=>{if(ED.hist.length){ED.base=ED.hist[0].base;ED.hist=[]}ED.stamps=[];ED.sel=null;ED.rect=null;edDraw()};
+$("edCancel").onclick=()=>{$("editor").hidden=true};
+$("edDone").onclick=async()=>{
+  if(!ED.hist.length&&!ED.stamps.length){$("editor").hidden=true;return}
+  const blob=await new Promise(r=>edComposite().toBlob(r,"image/jpeg",.9));
+  if(blob){S.files[ED.idx]=new File([blob],"edited.jpg",{type:"image/jpeg"});renderThumbs();toast("編集しました")}
+  $("editor").hidden=true;
+};
 
 /* ---------- viewer ---------- */
 let vIndex=0;
@@ -584,8 +685,10 @@ function capHTML(p){
   return `<div class="meta"><button class="who-link"><span class="who-slot"></span><span class="nm">${esc(mine?"me":nameOf(p.user_id))}</span></button><span class="when">${when(p.created_at)}</span></div>`+
    ((p.rating||mine)?`<div class="rateline"><span class="rlabel">欲しい度</span>${starsHTML(p.rating,mine)}</div>`:"")+
    (p.note?`<div class="note">${esc(p.note)}</div>`:"")+
-   `<div class="rbar">${list.map(e=>`<button class="rbtn" data-e="${esc(e)}" aria-pressed="${myReact(p.id,e)}">${esc(e)}<small>${rc.get(e)||""}</small></button>`).join("")}`+
-   `<button class="rbtn plus" aria-label="ほかの絵文字でリアクション">＋</button></div>`+
+   (mine
+     ?(rc.size?`<div class="rbar"><span class="rlabel">みんなのリアクション</span>${[...rc].map(([e,n])=>`<span class="rbtn ro">${esc(e)}<small>${n}</small></span>`).join("")}</div>`:`<div class="rbar"><span class="rlabel">まだリアクションはありません</span></div>`)
+     :`<div class="rbar">${list.map(e=>`<button class="rbtn" data-e="${esc(e)}" aria-pressed="${myReact(p.id,e)}">${esc(e)}<small>${rc.get(e)||""}</small></button>`).join("")}`+
+      `<button class="rbtn plus" aria-label="ほかの絵文字でリアクション">＋</button></div>`)+
    (mine?`<div class="tools"><button class="pinbtn" aria-pressed="${!!p.pinned}">${p.pinned?"📌 pinned":"📌 pin"}</button><button class="del">削除</button></div>`:"");
 }
 function wireCap(cap,p){
@@ -595,7 +698,7 @@ function wireCap(cap,p){
   cap.querySelectorAll(".stars.edit .st").forEach(b=>b.onclick=()=>{const r=+b.dataset.r;setRating(p,r===p.rating?null:r)});
   const pb=cap.querySelector(".pinbtn");if(pb)pb.onclick=()=>togglePin(p);
   const plus=cap.querySelector(".plus");
-  plus.onclick=ev=>{ev.stopPropagation();
+  if(plus)plus.onclick=ev=>{ev.stopPropagation();
     const inp=document.createElement("input");inp.className="emoji-in";inp.type="text";inp.placeholder="😀";inp.setAttribute("aria-label","絵文字を入力");inp.enterKeyHint="done";
     plus.replaceWith(inp);inp.focus();
     let fired=false;
@@ -619,7 +722,7 @@ function openViewer(list,i){
     const pop=document.createElement("div");pop.className="pop";pop.textContent="❤️";fr.appendChild(pop);
     s.appendChild(fr);
     const cap=document.createElement("div");cap.className="cap";cap.innerHTML=capHTML(p);wireCap(cap,p);s.appendChild(cap);
-    let last=0;im.addEventListener("click",()=>{const n=Date.now();if(n-last<320){if(!myReact(p.id,"❤️"))toggleReact(p.id,"❤️");pop.classList.add("on");setTimeout(()=>pop.classList.remove("on"),600)}last=n});
+    let last=0;im.addEventListener("click",()=>{if(p.user_id===S.me)return;const n=Date.now();if(n-last<320){if(!myReact(p.id,"❤️"))toggleReact(p.id,"❤️");pop.classList.add("on");setTimeout(()=>pop.classList.remove("on"),600)}last=n});
     v.appendChild(s);
   });
   v.hidden=false;$("vclose").hidden=false;$("vpos").hidden=false;$("fab").hidden=true;document.body.style.overflow="hidden";
@@ -642,6 +745,7 @@ function refreshViewerCaps(){
 
 /* ---------- writes ---------- */
 async function toggleReact(pid,e){
+  const post=S.posts.find(x=>x.id===pid);if(!post||post.user_id===S.me)return;
   const had=myReact(pid,e);
   if(had)S.reacts=S.reacts.filter(r=>!(r.post_id===pid&&r.emoji===e&&r.user_id===S.me));
   else S.reacts.push({post_id:pid,user_id:S.me,emoji:e});
@@ -665,14 +769,14 @@ async function deletePost(p){
 }
 
 /* ---------- add sheet ---------- */
-$("fab").onclick=()=>{S.files=[];$("thumbs").textContent="";$("note").value="";$("file").value="";$("pickText").textContent="タップして画像を選ぶ（複数OK）";
+$("fab").onclick=()=>{S.files=[];$("thumbs").textContent="";$("shotHint").hidden=true;$("note").value="";$("file").value="";$("pickText").textContent="タップして画像を選ぶ（複数OK）";
   $("ferr").hidden=true;$("submit").disabled=true;$("submit").textContent="追加する";setNewRating(0);
   const g=S.groups.find(x=>x.id===S.group);$("addTo").innerHTML=g?`追加先のグループ：<b>${esc(g.name)}</b>`:"先に上の「＋ group」でグループを作ってください。";if(S.cat!=="all")setNewCat(S.cat);$("scrim").hidden=false};
 const closeSheet=()=>{$("scrim").hidden=true};
 $("cancel").onclick=closeSheet;$("scrim").addEventListener("click",e=>{if(e.target===$("scrim"))closeSheet()});
 $("file").addEventListener("change",()=>{
   S.files=[...$("file").files].filter(f=>f.type.startsWith("image/"));
-  const t=$("thumbs");t.textContent="";S.files.forEach(f=>{const i=document.createElement("img");i.src=URL.createObjectURL(f);i.alt="タップで拡大";i.onclick=()=>openLightbox(i.src);t.appendChild(i)});
+  renderThumbs();
   $("pickText").textContent=S.files.length?S.files.length+"枚選択中（タップで選び直し）":"タップして画像を選ぶ（複数OK）";$("submit").disabled=!S.files.length});
 async function shrink(file,max=1600,square=false){
   try{const bmp=await createImageBitmap(file);
