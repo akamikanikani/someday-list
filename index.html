@@ -10,13 +10,13 @@
 <script>
 /* ▼▼ Supabase の接続情報：" " の中だけ書き換える ▼▼ */
 window.CONFIG = {
-  SUPABASE_URL: "https://wmacbyjfnkesiqvloiwp.supabase.co",
-  SUPABASE_KEY: "sb_publishable_QmlNduguSqyxp664FL1bZg__Q0HFC8W"
+  SUPABASE_URL: "ここにProject URL",
+  SUPABASE_KEY: "ここにPublishable key"
 };
 /* ▲▲ ここまで ▲▲ */
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Zen+Maru+Gothic:wght@500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&family=Zen+Maru+Gothic:wght@500;700&display=swap">
 <style>
 /* 明るいスクラップブック風：ミントの星柄背景 / 白い写真カードを少し傾けて / ラベンダーの手書き文字 / ホログラムのマスキングテープ */
 :root{
@@ -24,10 +24,11 @@ window.CONFIG = {
   --card:#FFFFFF;
   --ink:#3A3550;        /* 文字 */
   --muted:#8A86A0;
-  --lav:#8E7BEF;        /* タイトル・アクセント（ラベンダー） */
-  --pink:#F6B3C8;       /* カードのふち */
+  --lav:#968DBF;        /* タイトル・アクセント（落ち着いた紫） */
+  --pink:#E2E0E6;       /* カードのふち（薄いグレー） */
+  --check:linear-gradient(90deg,rgba(150,141,191,.22) 50%,transparent 50%) 0 0/10px 10px,linear-gradient(rgba(150,141,191,.22) 50%,transparent 50%) 0 0/10px 10px,#fff;
   --holo:linear-gradient(100deg,#FBD3E9 0%,#DCD6FF 30%,#D2F1FF 55%,#E3FFE9 75%,#FFF2C2 100%);
-  --hand:"Caveat","Zen Maru Gothic",cursive;
+  --hand:"Nanum Pen Script","Zen Maru Gothic",cursive;
   --body:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Hiragino Sans",system-ui,sans-serif;
   color-scheme:light;
   padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);
@@ -53,7 +54,7 @@ header{position:sticky;top:0;z-index:5;padding-block:10px;background:linear-grad
 .tabs::-webkit-scrollbar{display:none}
 .tab{flex:none;border:none;background:#fff;border-radius:6px;padding:4px 16px 6px;font-family:var(--hand);font-weight:700;font-size:22px;line-height:1.1;color:var(--muted);box-shadow:0 1px 0 rgba(58,53,80,.08)}
 .tab:nth-child(odd){transform:rotate(-2deg)}.tab:nth-child(even){transform:rotate(1.5deg)}
-.tab[aria-pressed="true"]{background:var(--holo);color:var(--lav);box-shadow:0 2px 6px rgba(142,123,239,.25)}
+.tab[aria-pressed="true"]{background:var(--holo);color:var(--lav);box-shadow:0 2px 6px rgba(150,141,191,.25)}
 .tab img,.cat img,.tape img{height:24px;display:block;margin:0 auto}
 .people{display:flex;gap:8px;margin-top:8px;overflow-x:auto;scrollbar-width:none;align-items:center;padding:2px}
 .people::-webkit-scrollbar{display:none}
@@ -97,7 +98,7 @@ main{padding-block:8px 130px}
 
 .fab{position:fixed;right:calc(max(16px,env(safe-area-inset-right,0px)) + 4px);bottom:calc(22px + env(safe-area-inset-bottom,0px));z-index:6;
   border:3px solid #fff;background:var(--lav);color:#fff;font-family:var(--hand);font-weight:700;font-size:26px;line-height:1;padding:10px 22px 12px;border-radius:999px;
-  box-shadow:0 6px 18px rgba(142,123,239,.4);transform:rotate(-3deg)}
+  box-shadow:0 6px 18px rgba(150,141,191,.4);transform:rotate(-3deg)}
 
 /* ---- viewer ---- */
 .viewer{position:fixed;inset:0;z-index:20;background:var(--paper) url("bg.jpg") center/cover;overflow-y:auto;scroll-snap-type:y mandatory;overscroll-behavior:contain}
@@ -120,7 +121,7 @@ main{padding-block:8px 130px}
 .emoji-in{width:4.5em;border:1.5px solid var(--lav);border-radius:999px;padding:4px 10px;font-size:16px;text-align:center}
 .del{margin-left:auto;border:none;background:none;color:var(--muted);font-size:12px;text-decoration:underline}
 .vclose{position:fixed;z-index:21;top:calc(12px + env(safe-area-inset-top,0px));right:calc(12px + env(safe-area-inset-right,0px));width:42px;height:42px;border-radius:50%;
-  border:2px solid #fff;background:var(--lav);color:#fff;font-size:20px;box-shadow:0 4px 10px rgba(142,123,239,.35)}
+  border:2px solid #fff;background:var(--lav);color:#fff;font-size:20px;box-shadow:0 4px 10px rgba(150,141,191,.35)}
 .vpos{position:fixed;z-index:21;top:calc(18px + env(safe-area-inset-top,0px));left:calc(16px + env(safe-area-inset-left,0px));font-family:var(--hand);font-size:20px;color:var(--lav);
   background:#fff;padding:0 12px;border-radius:999px;font-variant-numeric:tabular-nums}
 .pop{position:absolute;left:50%;top:45%;font-size:84px;transform:translate(-50%,-50%) scale(.4);opacity:0;pointer-events:none;transition:transform .35s,opacity .35s}
@@ -260,6 +261,36 @@ textarea{resize:vertical;min-height:72px}
 .gconfirm p{margin:0}
 .btn.danger{background:#E5484D;color:#fff}
 .linkbtn{border:none;background:none;color:var(--lav);font-weight:700;font-size:13px;padding:0}
+/* ==== design v2：落ち着いた紫・薄グレーの枠・カテゴリ色・角を控えめにしたスクショ ==== */
+.logo{font-size:48px;-webkit-text-stroke:5px #fff;font-weight:400}
+.count{font-size:22px}
+.tab{background:#fff;color:var(--c,var(--lav));font-weight:400;font-size:25px;border-radius:4px;padding:2px 12px 4px;box-shadow:0 1px 2px rgba(58,53,80,.08)}
+.tab[aria-pressed="true"]{background:var(--bg,#fff);color:var(--c,var(--lav));box-shadow:0 2px 6px rgba(58,53,80,.1)}
+.tab.all[aria-pressed="true"]{background:var(--check)}
+.ce{font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;font-size:.62em;margin-right:4px;vertical-align:.12em}
+.tape{background:var(--bg,#fff);color:var(--c,var(--lav));opacity:1;font-weight:400;font-size:20px;border-radius:2px}
+.feed .tape{font-size:17px}
+.frame .tape{font-size:25px}
+.cat{font-weight:400;font-size:22px;color:var(--c);border:1.5px solid var(--pink)}
+.cat[aria-pressed="true"]{background:var(--bg);border-color:var(--c);color:var(--c)}
+.card,.feed .card{border-radius:6px;border:1.5px solid var(--pink);box-shadow:0 3px 10px rgba(58,53,80,.06)}
+.card .ph,.feed .card .ph{border-radius:3px}
+.frame{border-radius:8px;border:1.5px solid var(--pink)}
+.frame img{border-radius:4px}
+.bitem{border-radius:4px}
+.thumbs img{border-radius:4px}
+.when{font-size:19px}.feed .when{font-size:16px}
+.fab{font-weight:400;font-size:30px;padding:6px 22px 8px}
+.status{font-size:26px}
+.empty b{font-size:34px;font-weight:400}
+.sec-title{font-size:36px;font-weight:400}
+.pfname{font-size:42px}
+.pfstats{font-size:22px}.pfstats b{font-size:26px;font-weight:400}
+.sheet h2,.auth h2{font-size:40px;font-weight:400}
+.vpos{font-size:22px}
+.ed-top .ttl{font-size:32px}
+.empty,.hint{border-color:var(--pink)}
+.pick{border-color:#D9D6E0;background:#FAFAFC}
 @media (prefers-reduced-motion:reduce){.pop,.card{transition:none}}
 </style>
 </head>
@@ -432,10 +463,10 @@ textarea{resize:vertical;min-height:72px}
 /* ===== 表示の設定（ここを書き換えると見た目が変わります） =====
    label：表示名。手書き画像ができたら img に画像ファイル名を入れる（例 "things.png"） */
 const CATS={
-  want:{label:"Things", img:""},
-  wear:{label:"Clothes",img:""},
-  go:  {label:"Places", img:""},
-  eat: {label:"Yummy",  img:""}
+  want:{label:"Things", emoji:"🎀", bg:"#FBE3EA", fg:"#C7647D", img:""},
+  wear:{label:"Clothes",emoji:"👕", bg:"#E1ECFA", fg:"#5A88C2", img:""},
+  go:  {label:"Places", emoji:"🏝️", bg:"#DFF3E9", fg:"#4A9A7B", img:""},
+  eat: {label:"Yummy",  emoji:"🍮", bg:"#FBEFD7", fg:"#B5873A", img:""}
 };
 const QUICK=["❤️","🥹","🤩","👀"];   /* すぐ押せるリアクション */
 const COLORS=["#8E7BEF","#F28DB2","#5CC3B8","#F5A54A","#6AA8F0","#B48CE0"];
@@ -445,7 +476,8 @@ const S={posts:[],reacts:[],profiles:{},urls:{},cat:"all",person:"all",me:null,f
 try{S.group=localStorage.getItem("sl_group")}catch(e){}
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const catHTML=c=>CATS[c]?(CATS[c].img?`<img src="${esc(CATS[c].img)}" alt="${esc(CATS[c].label)}">`:esc(CATS[c].label)):"";
+const catHTML=c=>CATS[c]?(CATS[c].img?`<img src="${esc(CATS[c].img)}" alt="${esc(CATS[c].label)}">`:`<span class="ce">${CATS[c].emoji||""}</span>${esc(CATS[c].label)}`):"";
+const paint=(el,c)=>{if(CATS[c]){el.style.setProperty("--c",CATS[c].fg);el.style.setProperty("--bg",CATS[c].bg)}return el};
 const uuid=()=>crypto.randomUUID?crypto.randomUUID():Date.now()+"-"+Math.random().toString(36).slice(2);
 function when(iso){const t=new Date(iso).getTime();const d=(Date.now()-t)/1000;if(d<60)return"just now";if(d<3600)return Math.floor(d/60)+"m ago";if(d<86400)return Math.floor(d/3600)+"h ago";
   const x=new Date(t),n=new Date();return (x.getFullYear()!==n.getFullYear()?x.getFullYear()+"/":"")+(x.getMonth()+1)+"/"+x.getDate()+" "+x.getHours()+":"+String(x.getMinutes()).padStart(2,"0")}
@@ -470,9 +502,9 @@ function setNewRating(r){S.newRating=r;$("ratePick").innerHTML=starsHTML(r,true)
 
 /* tabs & category buttons */
 (function(){
-  const tabs=$("tabs");const mk=(c,html)=>{const b=document.createElement("button");b.className="tab";b.dataset.cat=c;b.innerHTML=html;b.onclick=()=>{S.cat=c;render()};tabs.appendChild(b)};
+  const tabs=$("tabs");const mk=(c,html)=>{const b=document.createElement("button");b.className="tab"+(c==="all"?" all":"");b.dataset.cat=c;b.innerHTML=html;paint(b,c);b.onclick=()=>{S.cat=c;render()};tabs.appendChild(b)};
   mk("all","All");Object.keys(CATS).forEach(c=>mk(c,catHTML(c)));
-  const cats=$("cats");Object.keys(CATS).forEach(c=>{const b=document.createElement("button");b.type="button";b.className="cat";b.dataset.cat=c;b.innerHTML=catHTML(c);b.onclick=()=>setNewCat(c);cats.appendChild(b)});
+  const cats=$("cats");Object.keys(CATS).forEach(c=>{const b=document.createElement("button");b.type="button";b.className="cat";b.dataset.cat=c;b.innerHTML=catHTML(c);paint(b,c);b.onclick=()=>setNewCat(c);cats.appendChild(b)});
   setNewCat("want");setNewRating(0);
 })();
 
@@ -557,7 +589,7 @@ function renderPeople(){
 }
 function makeCard(p,list,i){
   const c=document.createElement("button");c.className="card";
-  const tape=document.createElement("span");tape.className="tape";tape.innerHTML=catHTML(p.cat);c.appendChild(tape);
+  const tape=document.createElement("span");tape.className="tape";tape.innerHTML=catHTML(p.cat);paint(tape,p.cat);c.appendChild(tape);
   if(p.pinned){const pin=document.createElement("span");pin.className="pinmark";pin.textContent="📌";c.appendChild(pin)}
   const ph=document.createElement("div");ph.className="ph";
   const im=document.createElement("img");im.className="shot";im.loading="lazy";im.alt="";im.src=S.urls[p.path]||"";
@@ -855,7 +887,7 @@ function openViewer(list,i){
   list.forEach((p,idx)=>{
     const s=document.createElement("section");s.className="slide";s.dataset.id=p.id;
     const fr=document.createElement("div");fr.className="frame";
-    const tape=document.createElement("span");tape.className="tape";tape.innerHTML=catHTML(p.cat);fr.appendChild(tape);
+    const tape=document.createElement("span");tape.className="tape";tape.innerHTML=catHTML(p.cat);paint(tape,p.cat);fr.appendChild(tape);
     const im=document.createElement("img");im.alt=p.note||"screenshot";im.src=S.urls[p.path]||"";im.loading=Math.abs(idx-i)<3?"eager":"lazy";fr.appendChild(im);
     const pop=document.createElement("div");pop.className="pop";pop.textContent="❤️";fr.appendChild(pop);
     s.appendChild(fr);
