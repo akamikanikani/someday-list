@@ -10,8 +10,8 @@
 <script>
 /* ▼▼ Supabase の接続情報：" " の中だけ書き換える ▼▼ */
 window.CONFIG = {
-  SUPABASE_URL: "https://wmacbyjfnkesiqvloiwp.supabase.co",
-  SUPABASE_KEY: "sb_publishable_QmlNduguSqyxp664FL1bZg__Q0HFC8W"
+  SUPABASE_URL: "ここにProject URL",
+  SUPABASE_KEY: "ここにPublishable key"
 };
 /* ▲▲ ここまで ▲▲ */
 </script>
@@ -306,6 +306,20 @@ textarea{resize:vertical;min-height:72px}
 /* ==== 小さい英語（時間・件数）は日本語と同じ字体 ==== */
 .when,.count{font-family:var(--body)}
 .when{font-size:12px}.feed .when{font-size:10px}.count{font-size:14px}
+/* ---- notifications ---- */
+.top{position:relative}
+.mecol{position:relative}
+.bell{position:absolute;left:50%;top:calc(100% + 8px);transform:translateX(-50%);width:32px;height:32px;border-radius:50%;border:1.5px solid var(--pink);background:#fff;color:var(--lav);display:grid;place-items:center;padding:0;z-index:2;box-shadow:0 2px 6px rgba(58,53,80,.08)}
+.bell svg{width:17px;height:17px}
+.badge{position:absolute;top:-5px;right:-6px;min-width:18px;height:18px;border-radius:999px;background:#F08AA6;color:#fff;font-size:10px;font-weight:700;display:grid;place-items:center;padding:0 4px;border:2px solid #fff}
+.groups{padding-right:46px}
+.nlist{display:grid;gap:4px;max-height:62dvh;overflow-y:auto;margin:0;padding:0;list-style:none}
+.nitem{display:flex;align-items:center;gap:10px;width:100%;border:none;background:none;text-align:left;padding:8px 6px;border-radius:12px;font:inherit;color:var(--ink)}
+.nitem.new{background:#F6F4FB}
+.nitem .ntext{flex:1;min-width:0;font-size:13px;line-height:1.5;overflow-wrap:anywhere}
+.nitem .ntext small{display:block;color:var(--muted);font-size:11px}
+.nitem .nthumb{width:40px;height:52px;border-radius:3px;object-fit:cover;object-position:top;flex:none;border:1px solid var(--pink);background:var(--paper)}
+.nitem .dot{width:7px;height:7px;border-radius:50%;background:#F08AA6;flex:none}
 @media (prefers-reduced-motion:reduce){.pop,.card{transition:none}}
 </style>
 </head>
@@ -317,7 +331,9 @@ textarea{resize:vertical;min-height:72px}
     <div class="top">
       <!-- 手書きロゴができたら、中身を <img src="logo.png" alt="someday list"> に差し替え -->
       <button class="logo-btn" id="logoBtn" aria-label="ホームへ"><h1 class="logo">someday list<svg class="doodle" viewBox="0 0 24 24" fill="#FFE27A" stroke="#3A3550" stroke-width="1.4" stroke-linejoin="round"><path d="M12 2.5l2.6 6 6.4.6-4.9 4.2 1.5 6.3L12 16.3 6.4 19.6l1.5-6.3L3 9.1l6.4-.6z"/></svg></h1></button>
-      <div style="display:flex;align-items:center;gap:10px"><span class="count" id="count"></span><button class="me-btn" id="meBtn" aria-label="マイページ"></button></div>
+      <div style="display:flex;align-items:center;gap:10px"><span class="count" id="count"></span>
+        <div class="mecol"><button class="me-btn" id="meBtn" aria-label="マイページ"></button>
+          <button class="bell" id="bellBtn" aria-label="お知らせ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="badge" id="bellBadge" hidden></span></button></div></div>
     </div>
     <div class="groups" id="groups" aria-label="グループ"></div>
     <div class="tabs" role="group" aria-label="カテゴリ" id="tabs"></div>
@@ -457,6 +473,15 @@ textarea{resize:vertical;min-height:72px}
       <button type="button" class="btn sec" id="bcancel">やめる</button>
       <button type="button" class="btn pri" id="bsend" disabled>送る</button>
     </div>
+  </div>
+</div>
+
+<div class="scrim" id="nscrim" hidden>
+  <div class="sheet">
+    <h2>news</h2>
+    <ul class="nlist" id="nlist"></ul>
+    <p class="hint" id="nempty" hidden>まだお知らせはありません。</p>
+    <div class="row"><button type="button" class="btn sec" id="nclose">閉じる</button></div>
   </div>
 </div>
 
@@ -626,6 +651,7 @@ function render(){
   const home=S.view==="home";
   $("home").hidden=!home;$("profile").hidden=home;$("tabs").hidden=!home;$("people").hidden=!home;$("groups").hidden=!home;
   const meBtn=$("meBtn");meBtn.textContent="";if(S.me){meBtn.appendChild(avatar(S.me))}
+  renderBell();
   if(home)renderHome();else renderProfile(S.view);
   if(!$("viewer").hidden)refreshViewerCaps();
 }
@@ -757,6 +783,39 @@ $("gform").addEventListener("submit",async e=>{e.preventDefault();
     const g=S.groups.find(x=>x.id===data);if(g){openGroupSheet(g)}return}
   $("gscrim").hidden=true;loadAll();
 });
+
+/* ---------- notifications ---------- */
+let seenAt=null;try{seenAt=localStorage.getItem("sl_seen")}catch(e){}
+function activities(){
+  if(!S.me)return [];const out=[];const since=Date.now()-30*864e5;const myGroups=new Set(S.groups.map(g=>g.id));
+  const byId=new Map(S.posts.map(p=>[p.id,p]));const seenPath=new Set();
+  S.posts.forEach(p=>{if(p.user_id!==S.me&&myGroups.has(p.group_id)&&!seenPath.has(p.user_id+p.path)){seenPath.add(p.user_id+p.path);
+    out.push({t:p.created_at,u:p.user_id,post:p,kind:"post"})}});
+  S.reacts.forEach(r=>{const p=byId.get(r.post_id);if(p&&p.user_id===S.me&&r.user_id!==S.me&&r.created_at)out.push({t:r.created_at,u:r.user_id,post:p,kind:"react",emoji:r.emoji})});
+  const iCommented=new Set(S.comments.filter(c=>c.user_id===S.me).map(c=>c.post_id));
+  S.comments.forEach(c=>{const p=byId.get(c.post_id);if(p&&c.user_id!==S.me&&(p.user_id===S.me||iCommented.has(c.post_id)))out.push({t:c.created_at,u:c.user_id,post:p,kind:"comment",body:c.body})});
+  return out.filter(a=>new Date(a.t).getTime()>since).sort((a,b)=>new Date(b.t)-new Date(a.t)).slice(0,60);
+}
+function renderBell(){
+  if(!seenAt){seenAt=new Date().toISOString();try{localStorage.setItem("sl_seen",seenAt)}catch(e){}}
+  const n=activities().filter(a=>a.t>seenAt).length;const b=$("bellBadge");b.hidden=!n;b.textContent=n>9?"9+":n;
+}
+function actText(a){const who=esc(nameOf(a.u));const cat=CATS[a.post.cat]?esc(CATS[a.post.cat].label):"";
+  if(a.kind==="post")return `<b>${who}</b> が ${cat} にスクショを追加しました`+(a.post.note?`<small>「${esc(a.post.note)}」</small>`:"");
+  if(a.kind==="react")return `<b>${who}</b> があなたのスクショに ${esc(a.emoji)} しました`;
+  return `<b>${who}</b> がコメントしました<small>「${esc(a.body)}」</small>`}
+function openNews(){
+  const list=activities();const ul=$("nlist");ul.textContent="";const prev=seenAt;
+  list.forEach(a=>{const li=document.createElement("li");const b=document.createElement("button");b.type="button";b.className="nitem"+(a.t>prev?" new":"");
+    b.appendChild(avatar(a.u));const tx=document.createElement("span");tx.className="ntext";tx.innerHTML=actText(a)+`<small>${when(a.t)}</small>`;b.appendChild(tx);
+    if(a.t>prev){const d=document.createElement("span");d.className="dot";b.appendChild(d)}
+    const im=document.createElement("img");im.className="nthumb";im.alt="";im.loading="lazy";im.src=S.urls[a.post.path]||"";b.appendChild(im);
+    b.onclick=()=>{$("nscrim").hidden=true;openViewer([a.post],0)};li.appendChild(b);ul.appendChild(li)});
+  $("nempty").hidden=list.length>0;$("nscrim").hidden=false;
+  seenAt=new Date().toISOString();try{localStorage.setItem("sl_seen",seenAt)}catch(e){}renderBell();
+}
+$("bellBtn").onclick=openNews;$("nclose").onclick=()=>{$("nscrim").hidden=true};
+$("nscrim").addEventListener("click",e=>{if(e.target===$("nscrim"))$("nscrim").hidden=true});
 
 /* ---------- bulk share past screenshots ---------- */
 let bulkGroup=null,bulkSel=new Set();
