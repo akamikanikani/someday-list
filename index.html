@@ -10,8 +10,8 @@
 <script>
 /* ▼▼ Supabase の接続情報：" " の中だけ書き換える ▼▼ */
 window.CONFIG = {
-  SUPABASE_URL: "https://wmacbyjfnkesiqvloiwp.supabase.co",
-  SUPABASE_KEY: "sb_publishable_QmlNduguSqyxp664FL1bZg__Q0HFC8W"
+  SUPABASE_URL: "ここにProject URL",
+  SUPABASE_KEY: "ここにPublishable key"
 };
 /* ▲▲ ここまで ▲▲ */
 </script>
@@ -24,9 +24,9 @@ window.CONFIG = {
   --card:#FFFFFF;
   --ink:#3A3550;        /* 文字 */
   --muted:#8A86A0;
-  --lav:#968DBF;        /* タイトル・アクセント（落ち着いた紫） */
+  --lav:#ACA3D5;        /* タイトル・アクセント（落ち着いた紫） */
   --pink:#E2E0E6;       /* カードのふち（薄いグレー） */
-  --check:linear-gradient(90deg,rgba(150,141,191,.22) 50%,transparent 50%) 0 0/10px 10px,linear-gradient(rgba(150,141,191,.22) 50%,transparent 50%) 0 0/10px 10px,#fff;
+  --check:linear-gradient(90deg,rgba(172,163,213,.22) 50%,transparent 50%) 0 0/10px 10px,linear-gradient(rgba(172,163,213,.22) 50%,transparent 50%) 0 0/10px 10px,#fff;
   --holo:linear-gradient(100deg,#FBD3E9 0%,#DCD6FF 30%,#D2F1FF 55%,#E3FFE9 75%,#FFF2C2 100%);
   --hand:"Nanum Pen Script","Kosugi Maru",cursive;
   --body:"Kosugi Maru","Hiragino Maru Gothic ProN","Hiragino Sans",system-ui,sans-serif;
@@ -54,7 +54,7 @@ header{position:sticky;top:0;z-index:5;padding-block:10px;background:linear-grad
 .tabs::-webkit-scrollbar{display:none}
 .tab{flex:none;border:none;background:#fff;border-radius:6px;padding:4px 16px 6px;font-family:var(--hand);font-weight:700;font-size:22px;line-height:1.1;color:var(--muted);box-shadow:0 1px 0 rgba(58,53,80,.08)}
 .tab:nth-child(odd){transform:rotate(-2deg)}.tab:nth-child(even){transform:rotate(1.5deg)}
-.tab[aria-pressed="true"]{background:var(--holo);color:var(--lav);box-shadow:0 2px 6px rgba(150,141,191,.25)}
+.tab[aria-pressed="true"]{background:var(--holo);color:var(--lav);box-shadow:0 2px 6px rgba(172,163,213,.25)}
 .tab img,.cat img,.tape img{height:24px;display:block;margin:0 auto}
 .people{display:flex;gap:8px;margin-top:8px;overflow-x:auto;scrollbar-width:none;align-items:center;padding:2px}
 .people::-webkit-scrollbar{display:none}
@@ -98,7 +98,7 @@ main{padding-block:8px 130px}
 
 .fab{position:fixed;right:calc(max(16px,env(safe-area-inset-right,0px)) + 4px);bottom:calc(22px + env(safe-area-inset-bottom,0px));z-index:6;
   border:3px solid #fff;background:var(--lav);color:#fff;font-family:var(--hand);font-weight:700;font-size:26px;line-height:1;padding:10px 22px 12px;border-radius:999px;
-  box-shadow:0 6px 18px rgba(150,141,191,.4);transform:rotate(-3deg)}
+  box-shadow:0 6px 18px rgba(172,163,213,.4);transform:rotate(-3deg)}
 
 /* ---- viewer ---- */
 .viewer{position:fixed;inset:0;z-index:20;background:var(--paper) url("bg.jpg") center/cover;overflow-y:auto;scroll-snap-type:y mandatory;overscroll-behavior:contain}
@@ -121,7 +121,7 @@ main{padding-block:8px 130px}
 .emoji-in{width:4.5em;border:1.5px solid var(--lav);border-radius:999px;padding:4px 10px;font-size:16px;text-align:center}
 .del{margin-left:auto;border:none;background:none;color:var(--muted);font-size:12px;text-decoration:underline}
 .vclose{position:fixed;z-index:21;top:calc(12px + env(safe-area-inset-top,0px));right:calc(12px + env(safe-area-inset-right,0px));width:42px;height:42px;border-radius:50%;
-  border:2px solid #fff;background:var(--lav);color:#fff;font-size:20px;box-shadow:0 4px 10px rgba(150,141,191,.35)}
+  border:2px solid #fff;background:var(--lav);color:#fff;font-size:20px;box-shadow:0 4px 10px rgba(172,163,213,.35)}
 .vpos{position:fixed;z-index:21;top:calc(18px + env(safe-area-inset-top,0px));left:calc(16px + env(safe-area-inset-left,0px));font-family:var(--hand);font-size:20px;color:var(--lav);
   background:#fff;padding:0 12px;border-radius:999px;font-variant-numeric:tabular-nums}
 .pop{position:absolute;left:50%;top:45%;font-size:84px;transform:translate(-50%,-50%) scale(.4);opacity:0;pointer-events:none;transition:transform .35s,opacity .35s}
@@ -302,7 +302,7 @@ textarea{resize:vertical;min-height:72px}
   background:repeating-linear-gradient(90deg,rgba(255,255,255,.55) 0 1px,transparent 1px 4px)}
 .tab{position:relative;border-radius:0}
 .tab[aria-pressed="true"]{box-shadow:none}
-.tab.all[aria-pressed="true"]{background:linear-gradient(90deg,rgba(150,141,191,.22) 50%,transparent 50%) 0 0/10px 10px,linear-gradient(rgba(150,141,191,.22) 50%,transparent 50%) 0 0/10px 10px,rgba(255,255,255,.75)}
+.tab.all[aria-pressed="true"]{background:linear-gradient(90deg,rgba(172,163,213,.22) 50%,transparent 50%) 0 0/10px 10px,linear-gradient(rgba(172,163,213,.22) 50%,transparent 50%) 0 0/10px 10px,rgba(255,255,255,.75)}
 /* ==== 小さい英語（時間・件数）は日本語と同じ字体 ==== */
 .when,.count{font-family:var(--body)}
 .when{font-size:12px}.feed .when{font-size:10px}.count{font-size:14px}
