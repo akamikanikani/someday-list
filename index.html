@@ -10,8 +10,8 @@
 <script>
 /* ▼▼ Supabase の接続情報：" " の中だけ書き換える ▼▼ */
 window.CONFIG = {
-  SUPABASE_URL: "https://wmacbyjfnkesiqvloiwp.supabase.co",
-  SUPABASE_KEY: "sb_publishable_QmlNduguSqyxp664FL1bZg__Q0HFC8W"
+  SUPABASE_URL: "ここにProject URL",
+  SUPABASE_KEY: "ここにPublishable key"
 };
 /* ▲▲ ここまで ▲▲ */
 </script>
@@ -254,6 +254,11 @@ textarea{resize:vertical;min-height:72px}
 .bitem[aria-pressed="true"]{outline:3px solid var(--lav);outline-offset:-3px}
 .bitem[aria-pressed="true"] .ck{background:var(--lav)}
 .bbar{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted)}
+.gdanger{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;border-top:1.5px dashed #EEE;padding-top:12px}
+.linkbtn.danger{color:#D6343A;font-weight:500;text-decoration:underline}
+.gconfirm{background:#FFF1F2;border-radius:16px;padding:12px;display:grid;gap:10px;font-size:13px;line-height:1.6}
+.gconfirm p{margin:0}
+.btn.danger{background:#E5484D;color:#fff}
 .linkbtn{border:none;background:none;color:var(--lav);font-weight:700;font-size:13px;padding:0}
 @media (prefers-reduced-motion:reduce){.pop,.card{transition:none}}
 </style>
@@ -357,6 +362,14 @@ textarea{resize:vertical;min-height:72px}
       <div class="inrow" style="margin-top:8px"><input class="tin" type="email" id="gemail" placeholder="追加する人のメールアドレス"><button type="button" class="btn pri" id="gadd">追加</button></div>
     </div>
     <button type="button" class="btn sec" id="gbulkOpen" style="flex:none">🗂 過去のスクショをこのグループに送る</button>
+    <div class="gdanger" id="gdanger">
+      <button type="button" class="linkbtn danger" id="gleave">このグループから抜ける</button>
+      <button type="button" class="linkbtn danger" id="gdelete">グループを削除する</button>
+    </div>
+    <div class="gconfirm" id="gconfirm" hidden>
+      <p id="gconfirmMsg"></p>
+      <div class="row"><button type="button" class="btn sec" id="gconfirmNo">やめる</button><button type="button" class="btn danger" id="gconfirmYes">実行する</button></div>
+    </div>
     <div class="err" id="gerr" hidden></div>
     <div class="row">
       <button type="button" class="btn sec" id="gcancel">閉じる</button>
@@ -638,6 +651,8 @@ function openGroupSheet(g){
   gEditing=g;$("gerr").hidden=true;$("gemail").value="";
   $("gtitle").textContent=g?"group":"new group";$("gname").value=g?g.name:"";
   $("gmembersBox").hidden=!g;$("gbulkOpen").hidden=!g;$("gsave").textContent=g?"保存する":"作成する";
+  $("gdanger").hidden=!g;$("gconfirm").hidden=true;
+  if(g)$("gdelete").hidden=!(g.created_by===S.me||!g.created_by);
   renderGM();$("gscrim").hidden=false;
 }
 function renderGM(){
@@ -657,6 +672,29 @@ $("gadd").onclick=async()=>{
   S.gm.push({group_id:gEditing.id,email});$("gemail").value="";$("gerr").hidden=true;renderGM();toast("追加しました");
 };
 $("gcancel").onclick=()=>{$("gscrim").hidden=true};
+let gAction=null;
+function gAsk(kind){gAction=kind;const g=gEditing;
+  $("gconfirmMsg").textContent=kind==="leave"
+    ?`「${g.name}」から抜けます。このグループのスクショは見られなくなります（自分が送ったスクショは残ります）。`
+    :`「${g.name}」を削除します。このグループに送られたスクショ・リアクション・コメントが、メンバー全員から消えます。ほかのグループにも送ったスクショは、そちらには残ります。元に戻せません。`;
+  $("gconfirmYes").textContent=kind==="leave"?"抜ける":"削除する";$("gconfirm").hidden=false;$("gdanger").hidden=true}
+$("gleave").onclick=()=>gAsk("leave");$("gdelete").onclick=()=>gAsk("delete");
+$("gconfirmNo").onclick=()=>{$("gconfirm").hidden=true;$("gdanger").hidden=false};
+$("gconfirmYes").onclick=async()=>{
+  const g=gEditing;if(!g)return;const btn=$("gconfirmYes");btn.disabled=true;
+  let error;
+  if(gAction==="leave"){({error}=await sb.from("group_members").delete().match({group_id:g.id,email:S.myEmail}))}
+  else{
+    const mine=S.posts.filter(p=>p.group_id===g.id&&p.user_id===S.me).map(p=>p.path);
+    const orphan=mine.filter(path=>!S.posts.some(p=>p.path===path&&p.group_id!==g.id));
+    ({error}=await sb.from("groups").delete().eq("id",g.id));
+    if(!error&&orphan.length)await sb.storage.from("shots").remove(orphan);
+  }
+  btn.disabled=false;
+  if(error){gErr(error);return}
+  $("gscrim").hidden=true;if(S.group===g.id)setGroup(null);S.person="all";
+  toast(gAction==="leave"?"グループから抜けました":"グループを削除しました");loadAll();
+};
 $("gscrim").addEventListener("click",e=>{if(e.target===$("gscrim"))$("gscrim").hidden=true});
 $("gform").addEventListener("submit",async e=>{e.preventDefault();
   const name=$("gname").value.trim();if(!name)return;
