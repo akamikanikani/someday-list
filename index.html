@@ -10,8 +10,8 @@
 <script>
 /* ▼▼ Supabase の接続情報：" " の中だけ書き換える ▼▼ */
 window.CONFIG = {
-  SUPABASE_URL: "https://wmacbyjfnkesiqvloiwp.supabase.co",
-  SUPABASE_KEY: "sb_publishable_QmlNduguSqyxp664FL1bZg__Q0HFC8W"
+  SUPABASE_URL: "ここにProject URL",
+  SUPABASE_KEY: "ここにPublishable key"
 };
 /* ▲▲ ここまで ▲▲ */
 </script>
@@ -64,7 +64,17 @@ header{position:sticky;top:0;z-index:5;padding-block:10px;background:linear-grad
 
 /* ---- feed ---- */
 main{padding-block:8px 130px}
-.feed{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 14px;align-items:start}
+.feed{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px 9px;align-items:start}
+.feed .card{padding:4px;border-radius:14px;border-width:1.5px}
+.feed .card .ph{border-radius:10px}
+.feed .card .who{width:22px;height:22px;font-size:10px;left:4px;bottom:4px}
+.feed .tape{font-size:14px;padding:0 8px;top:-10px}
+.feed .card .body{padding:5px 2px 2px;gap:3px}
+.feed .when{font-size:14px}
+.feed .note{font-size:11px;-webkit-line-clamp:2;line-height:1.4}
+.feed .stars .st{font-size:10px}
+.feed .rx span{font-size:10px;padding:0 6px}
+.feed .pinmark{font-size:17px;top:-9px;right:-5px}
 .card{position:relative;margin:10px 0 0;background:var(--card);border-radius:18px;padding:6px;width:100%;text-align:left;display:block;
   border:2px solid var(--pink);box-shadow:0 4px 12px rgba(58,53,80,.08);transition:transform .2s}
 .card:nth-child(3n+1){transform:rotate(-1.2deg)}.card:nth-child(3n+2){transform:rotate(1deg)}.card:nth-child(3n){transform:rotate(-.4deg)}
@@ -225,6 +235,26 @@ textarea{resize:vertical;min-height:72px}
 .ed-bottom{display:flex;gap:8px}
 .ed-bottom .ed-btn{flex:1}
 .shot-hint{font-size:12px;color:var(--muted);margin:-6px 0 0}
+/* ---- comments / bulk share ---- */
+.cmts{display:grid;gap:6px;max-height:132px;overflow-y:auto;padding-right:2px}
+.cmt{display:flex;gap:8px;align-items:flex-start;font-size:13px;line-height:1.5}
+.cmt .av{width:24px;height:24px;font-size:10px;border-width:1.5px}
+.cmt .cb{flex:1;min-width:0;background:var(--paper);border-radius:4px 14px 14px 14px;padding:5px 10px;overflow-wrap:anywhere}
+.cmt .cb b{font-size:11px;color:var(--muted);margin-right:6px}
+.cmt .cdel{border:none;background:none;color:var(--muted);font-size:11px;padding:4px 0}
+.cin{display:flex;gap:6px}
+.cin input{flex:1;min-width:0;border:1.5px solid #EAE6F7;border-radius:999px;padding:8px 14px;font:inherit;font-size:16px;background:#FCFBFF;color:var(--ink)}
+.cin button{flex:none;border:none;border-radius:999px;background:var(--lav);color:#fff;font-weight:700;padding:0 16px}
+.cin button:disabled{opacity:.4}
+.rx .cc{background:#FFF1F6}
+.bgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;max-height:50dvh;overflow-y:auto}
+.bitem{position:relative;border:none;padding:0;border-radius:10px;overflow:hidden;background:var(--paper);aspect-ratio:3/4}
+.bitem img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
+.bitem .ck{position:absolute;top:5px;right:5px;width:24px;height:24px;border-radius:50%;border:2px solid #fff;background:rgba(58,53,80,.35);color:#fff;font-size:13px;display:grid;place-items:center}
+.bitem[aria-pressed="true"]{outline:3px solid var(--lav);outline-offset:-3px}
+.bitem[aria-pressed="true"] .ck{background:var(--lav)}
+.bbar{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted)}
+.linkbtn{border:none;background:none;color:var(--lav);font-weight:700;font-size:13px;padding:0}
 @media (prefers-reduced-motion:reduce){.pop,.card{transition:none}}
 </style>
 </head>
@@ -326,6 +356,7 @@ textarea{resize:vertical;min-height:72px}
       <ul class="mlist" id="gmembers"></ul>
       <div class="inrow" style="margin-top:8px"><input class="tin" type="email" id="gemail" placeholder="追加する人のメールアドレス"><button type="button" class="btn pri" id="gadd">追加</button></div>
     </div>
+    <button type="button" class="btn sec" id="gbulkOpen" style="flex:none">🗂 過去のスクショをこのグループに送る</button>
     <div class="err" id="gerr" hidden></div>
     <div class="row">
       <button type="button" class="btn sec" id="gcancel">閉じる</button>
@@ -350,6 +381,21 @@ textarea{resize:vertical;min-height:72px}
       <span class="ed-hint" style="flex-basis:100%">隠したい所をタップ。指を動かすと位置を調整できます。</span>
     </div>
     <div class="ed-bottom"><button type="button" class="ed-btn" id="edUndo">ひとつ戻す</button><button type="button" class="ed-btn" id="edReset">最初に戻す</button></div>
+  </div>
+</div>
+
+<div class="scrim" id="bscrim" hidden>
+  <div class="sheet">
+    <h2>share to group</h2>
+    <p class="addto" id="btitle"></p>
+    <div class="bbar"><span id="bcount">0枚選択中</span><button type="button" class="linkbtn" id="ball">すべて選ぶ</button></div>
+    <div class="bgrid" id="bgrid"></div>
+    <p class="hint" id="bempty" hidden>このグループに送れる過去のスクショはありません。</p>
+    <div class="err" id="berr" hidden></div>
+    <div class="row">
+      <button type="button" class="btn sec" id="bcancel">やめる</button>
+      <button type="button" class="btn pri" id="bsend" disabled>送る</button>
+    </div>
   </div>
 </div>
 
@@ -382,7 +428,7 @@ const QUICK=["❤️","🥹","🤩","👀"];   /* すぐ押せるリアクショ
 const COLORS=["#8E7BEF","#F28DB2","#5CC3B8","#F5A54A","#6AA8F0","#B48CE0"];
 /* ============================================================ */
 
-const S={posts:[],reacts:[],profiles:{},urls:{},cat:"all",person:"all",me:null,files:[],newCat:"want",newRating:0,vlist:[],color:COLORS[0],view:"home",avatarFile:null,groups:[],gm:[],group:null,myEmail:""};
+const S={posts:[],reacts:[],profiles:{},urls:{},cat:"all",person:"all",me:null,files:[],newCat:"want",newRating:0,vlist:[],color:COLORS[0],view:"home",avatarFile:null,groups:[],gm:[],group:null,myEmail:"",comments:[]};
 try{S.group=localStorage.getItem("sl_group")}catch(e){}
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -450,10 +496,11 @@ sb.auth.onAuthStateChange(ev=>{if(ev==="SIGNED_IN"&&!S.me)boot()});
 
 /* ---------- data ---------- */
 async function loadAll(){
-  const [p,r,pr,g,gm]=await Promise.all([sb.from("posts").select("*").order("created_at",{ascending:false}),sb.from("reactions").select("*"),sb.from("profiles").select("*"),
-    sb.from("groups").select("*").order("created_at"),sb.from("group_members").select("*")]);
+  const [p,r,pr,g,gm,cm]=await Promise.all([sb.from("posts").select("*").order("created_at",{ascending:false}),sb.from("reactions").select("*"),sb.from("profiles").select("*"),
+    sb.from("groups").select("*").order("created_at"),sb.from("group_members").select("*"),
+    sb.from("comments").select("*").order("created_at")]);
   if(p.error){$("status").textContent="読み込めませんでした（"+p.error.message+"）";return}
-  S.groups=g.data||[];S.gm=gm.data||[];
+  S.groups=g.data||[];S.gm=gm.data||[];S.comments=cm.data||[];
   if(!S.groups.some(x=>x.id===S.group))setGroup(S.groups[0]?S.groups[0].id:null,true);
   S.posts=p.data||[];S.reacts=r.data||[];S.profiles={};(pr.data||[]).forEach(x=>S.profiles[x.id]=x);
   const need=[...S.posts.map(x=>x.path),...(pr.data||[]).map(x=>x.avatar_path).filter(Boolean)].filter(x=>!S.urls[x]);
@@ -465,7 +512,8 @@ let started=false;
 function startApp(){
   show("app");route();loadAll();if(started)return;started=true;
   sb.channel("live").on("postgres_changes",{event:"*",schema:"public",table:"posts"},scheduleReload)
-    .on("postgres_changes",{event:"*",schema:"public",table:"reactions"},scheduleReload).subscribe();
+    .on("postgres_changes",{event:"*",schema:"public",table:"reactions"},scheduleReload)
+    .on("postgres_changes",{event:"*",schema:"public",table:"comments"},scheduleReload).subscribe();
   document.addEventListener("visibilitychange",()=>{if(!document.hidden)scheduleReload()});
 }
 
@@ -490,7 +538,7 @@ function renderPeople(){
   const mk=(id,label,av)=>{const b=document.createElement("button");b.className="person";b.setAttribute("aria-pressed",String(S.person===id));
     b.appendChild(av);const s=document.createElement("span");s.textContent=label;b.appendChild(s);b.onclick=()=>{S.person=id;render()};box.appendChild(b)};
   const all=document.createElement("span");all.className="av all";all.textContent="★";mk("all","everyone",all);
-  ids.sort((a,b)=>(b===S.me)-(a===S.me)).forEach(id=>mk(id,id===S.me?"me":nameOf(id),avatar(id)));
+  ids.sort((a,b)=>(b===S.me)-(a===S.me)).forEach(id=>mk(id,nameOf(id),avatar(id)));
   if(S.person!=="all"){const g=document.createElement("button");g.className="person go";g.textContent="profile →";g.onclick=()=>goProfile(S.person);box.appendChild(g)}
   box.hidden=!ids.length;
 }
@@ -504,8 +552,8 @@ function makeCard(p,list,i){
   ph.appendChild(im);ph.appendChild(avatar(p.user_id,"who"));c.appendChild(ph);
   const b=document.createElement("div");b.className="body";
   b.innerHTML=`<div class="line"><span class="when">${when(p.created_at)}</span>${p.rating?starsHTML(p.rating):""}</div>`+(p.note?`<div class="note">${esc(p.note)}</div>`:"");
-  const rc=reactCounts(p.id);
-  if(rc.size){const rx=document.createElement("div");rx.className="rx";rx.innerHTML=[...rc].map(([e,n])=>`<span>${esc(e)} ${n}</span>`).join("");b.appendChild(rx)}
+  const rc=reactCounts(p.id);const cn=S.comments.filter(x=>x.post_id===p.id).length;
+  if(rc.size||cn){const rx=document.createElement("div");rx.className="rx";rx.innerHTML=[...rc].map(([e,n])=>`<span>${esc(e)} ${n}</span>`).join("")+(cn?`<span class="cc">💬 ${cn}</span>`:"");b.appendChild(rx)}
   c.appendChild(b);c.onclick=()=>openViewer(list,i);return c;
 }
 function render(){
@@ -532,6 +580,7 @@ function renderHome(){
   const em=$("empty");em.hidden=list.length>0;
   if(!S.group)em.innerHTML="<b>make a group!</b>上の「＋ group」からグループを作りましょう。";
   else if(S.posts.some(p=>p.group_id===S.group)&&!list.length)em.innerHTML="<b>nothing here</b>タブや人を切り替えてみてください。";
+  else if(bulkCandidates(S.group).length){em.innerHTML='<b>nothing yet!</b>過去のスクショをまとめて送れます。<br><button class="btn pri small" style="margin-top:10px" id="emptyBulk">🗂 過去のスクショを送る</button>';$("emptyBulk").onclick=()=>openBulk(S.group)}
   else em.innerHTML="<b>nothing yet!</b>気になったもののスクショを<br>右下の「+ add」から入れてみましょう。";
 }
 function renderProfile(uid){
@@ -540,7 +589,7 @@ function renderProfile(uid){
   $("count").textContent=posts.length+" items";
   const head=$("pfHead");head.textContent="";
   const av=avatar(uid,"lg");head.appendChild(av);
-  const nm=document.createElement("h2");nm.className="pfname";nm.textContent=mine?(nameOf(uid)+" (me)"):nameOf(uid);head.appendChild(nm);
+  const nm=document.createElement("h2");nm.className="pfname";nm.textContent=nameOf(uid);head.appendChild(nm);
   const bio=document.createElement("p");bio.className="bio";bio.textContent=(pf&&pf.bio)||(mine?"ひとことを書いてみましょう":"");head.appendChild(bio);
   const st=document.createElement("div");st.className="pfstats";
   st.innerHTML=`<span><b>${posts.length}</b> posts</span><span><b>${pins.length}</b> pinned</span>`;head.appendChild(st);
@@ -588,7 +637,7 @@ let gEditing=null;
 function openGroupSheet(g){
   gEditing=g;$("gerr").hidden=true;$("gemail").value="";
   $("gtitle").textContent=g?"group":"new group";$("gname").value=g?g.name:"";
-  $("gmembersBox").hidden=!g;$("gsave").textContent=g?"保存する":"作成する";
+  $("gmembersBox").hidden=!g;$("gbulkOpen").hidden=!g;$("gsave").textContent=g?"保存する":"作成する";
   renderGM();$("gscrim").hidden=false;
 }
 function renderGM(){
@@ -612,9 +661,44 @@ $("gscrim").addEventListener("click",e=>{if(e.target===$("gscrim"))$("gscrim").h
 $("gform").addEventListener("submit",async e=>{e.preventDefault();
   const name=$("gname").value.trim();if(!name)return;
   if(gEditing){const {error}=await sb.from("groups").update({name}).eq("id",gEditing.id);if(error){gErr(error);return}gEditing.name=name}
-  else{const {data,error}=await sb.rpc("create_group",{gname:name});if(error){gErr(error);return}setGroup(data);S.person="all";toast("グループを作りました")}
+  else{const {data,error}=await sb.rpc("create_group",{gname:name});if(error){gErr(error);return}setGroup(data);S.person="all";
+    $("gscrim").hidden=true;await loadAll();toast("グループを作りました");
+    const g=S.groups.find(x=>x.id===data);if(g){openGroupSheet(g)}return}
   $("gscrim").hidden=true;loadAll();
 });
+
+/* ---------- bulk share past screenshots ---------- */
+let bulkGroup=null,bulkSel=new Set();
+function bulkCandidates(gid){
+  if(!gid)return [];const inG=new Set(S.posts.filter(p=>p.group_id===gid&&p.user_id===S.me).map(p=>p.path));
+  const seen=new Set();return S.posts.filter(p=>p.user_id===S.me&&!inG.has(p.path)&&!seen.has(p.path)&&seen.add(p.path));
+}
+function openBulk(gid){
+  bulkGroup=gid;bulkSel=new Set();const g=S.groups.find(x=>x.id===gid);
+  $("btitle").innerHTML=`送り先：<b>${esc(g?g.name:"")}</b>（自分が追加したスクショから選べます）`;$("berr").hidden=true;
+  renderBulk();$("gscrim").hidden=true;$("bscrim").hidden=false;
+}
+function renderBulk(){
+  const list=bulkCandidates(bulkGroup);const box=$("bgrid");box.textContent="";
+  list.forEach(p=>{const b=document.createElement("button");b.type="button";b.className="bitem";b.setAttribute("aria-pressed",String(bulkSel.has(p.path)));
+    const im=document.createElement("img");im.src=S.urls[p.path]||"";im.alt=p.note||"スクショ";im.loading="lazy";b.appendChild(im);
+    const ck=document.createElement("span");ck.className="ck";ck.textContent=bulkSel.has(p.path)?"✓":"";b.appendChild(ck);
+    b.onclick=()=>{bulkSel.has(p.path)?bulkSel.delete(p.path):bulkSel.add(p.path);renderBulk()};box.appendChild(b)});
+  $("bempty").hidden=list.length>0;$("ball").hidden=!list.length;
+  $("ball").textContent=list.length&&bulkSel.size===list.length?"選択を外す":"すべて選ぶ";
+  $("bcount").textContent=bulkSel.size+"枚選択中";$("bsend").disabled=!bulkSel.size;$("bsend").textContent=bulkSel.size?bulkSel.size+"枚を送る":"送る";
+}
+$("ball").onclick=()=>{const list=bulkCandidates(bulkGroup);bulkSel=bulkSel.size===list.length?new Set():new Set(list.map(p=>p.path));renderBulk()};
+$("bcancel").onclick=()=>{$("bscrim").hidden=true};
+$("bscrim").addEventListener("click",e=>{if(e.target===$("bscrim"))$("bscrim").hidden=true});
+$("gbulkOpen").onclick=()=>{if(gEditing)openBulk(gEditing.id)};
+$("bsend").onclick=async()=>{
+  const rows=bulkCandidates(bulkGroup).filter(p=>bulkSel.has(p.path)).map(p=>({cat:p.cat,note:p.note,path:p.path,w:p.w,h:p.h,rating:p.rating,pinned:p.pinned,group_id:bulkGroup}));
+  if(!rows.length)return;const btn=$("bsend");btn.disabled=true;btn.textContent="送信中…";
+  const {error}=await sb.from("posts").insert(rows);
+  if(error){$("berr").textContent="送れませんでした（"+error.message+"）";$("berr").hidden=false;renderBulk();return}
+  $("bscrim").hidden=true;setGroup(bulkGroup);S.person="all";toast(rows.length+"枚 送りました");loadAll();
+};
 
 /* ---------- image editor (crop & stamps) ---------- */
 const STAMPS=["🙈","⭐️","💜","🌸","🍓","bar:#8E7BEF","bar:#F28DB2","bar:#3A3550"];
@@ -682,16 +766,32 @@ $("edDone").onclick=async()=>{
 let vIndex=0;
 function capHTML(p){
   const rc=reactCounts(p.id);const list=[...new Set([...QUICK,...rc.keys()])];const mine=p.user_id===S.me;
-  return `<div class="meta"><button class="who-link"><span class="who-slot"></span><span class="nm">${esc(mine?"me":nameOf(p.user_id))}</span></button><span class="when">${when(p.created_at)}</span></div>`+
+  return `<div class="meta"><button class="who-link"><span class="who-slot"></span><span class="nm">${esc(nameOf(p.user_id))}</span></button><span class="when">${when(p.created_at)}</span></div>`+
    ((p.rating||mine)?`<div class="rateline"><span class="rlabel">欲しい度</span>${starsHTML(p.rating,mine)}</div>`:"")+
    (p.note?`<div class="note">${esc(p.note)}</div>`:"")+
    (mine
      ?(rc.size?`<div class="rbar"><span class="rlabel">みんなのリアクション</span>${[...rc].map(([e,n])=>`<span class="rbtn ro">${esc(e)}<small>${n}</small></span>`).join("")}</div>`:`<div class="rbar"><span class="rlabel">まだリアクションはありません</span></div>`)
      :`<div class="rbar">${list.map(e=>`<button class="rbtn" data-e="${esc(e)}" aria-pressed="${myReact(p.id,e)}">${esc(e)}<small>${rc.get(e)||""}</small></button>`).join("")}`+
       `<button class="rbtn plus" aria-label="ほかの絵文字でリアクション">＋</button></div>`)+
+   commentsHTML(p)+
    (mine?`<div class="tools"><button class="pinbtn" aria-pressed="${!!p.pinned}">${p.pinned?"📌 pinned":"📌 pin"}</button><button class="del">削除</button></div>`:"");
 }
+function commentsHTML(p){
+  const cs=S.comments.filter(c=>c.post_id===p.id);
+  return `<div class="cmts">${cs.map(c=>`<div class="cmt" data-u="${esc(c.user_id)}"><span class="av-slot"></span><div class="cb"><b>${esc(nameOf(c.user_id))}</b>${esc(c.body)}</div>${c.user_id===S.me?`<button class="cdel" data-id="${esc(c.id)}" aria-label="コメントを消す">×</button>`:""}</div>`).join("")}</div>`+
+   `<form class="cin"><input type="text" maxlength="200" placeholder="コメントする…" aria-label="コメント" enterkeyhint="send"><button type="submit" disabled>送信</button></form>`;
+}
 function wireCap(cap,p){
+  cap.querySelectorAll(".cmt").forEach(el=>el.querySelector(".av-slot").replaceWith(avatar(el.dataset.u)));
+  const cl=cap.querySelector(".cmts");if(cl)cl.scrollTop=cl.scrollHeight;
+  cap.querySelectorAll(".cdel").forEach(b=>b.onclick=async()=>{const id=b.dataset.id;const {error}=await sb.from("comments").delete().eq("id",id);
+    if(error){toast("消せませんでした");return}S.comments=S.comments.filter(c=>c.id!==id);render()});
+  const cf=cap.querySelector(".cin"),ci=cf.querySelector("input"),cb=cf.querySelector("button");
+  ci.addEventListener("input",()=>{cb.disabled=!ci.value.trim()});
+  cf.addEventListener("submit",async e=>{e.preventDefault();const body=ci.value.trim();if(!body)return;cb.disabled=true;
+    const {data,error}=await sb.from("comments").insert({post_id:p.id,body}).select().single();
+    if(error){toast("コメントできませんでした");cb.disabled=false;return}
+    S.comments.push(data||{id:uuid(),post_id:p.id,user_id:S.me,body,created_at:new Date().toISOString()});render()});
   const slot=cap.querySelector(".who-slot");if(slot)slot.replaceWith(avatar(p.user_id));
   cap.querySelector(".who-link").onclick=()=>{closeViewer();goProfile(p.user_id)};
   cap.querySelectorAll(".rbtn[data-e]").forEach(b=>b.onclick=ev=>{ev.stopPropagation();toggleReact(p.id,b.dataset.e)});
@@ -738,7 +838,8 @@ document.addEventListener("keydown",e=>{if($("viewer").hidden||e.target.tagName=
   if(e.key==="ArrowUp"){e.preventDefault();v.scrollTo({top:Math.max(vIndex-1,0)*v.clientHeight,behavior:"smooth"})}});
 function refreshViewerCaps(){
   document.querySelectorAll("#viewer .slide").forEach(s=>{const p=S.posts.find(x=>x.id===s.dataset.id);
-    if(!p){s.remove();return}const cap=s.querySelector(".cap");cap.innerHTML=capHTML(p);wireCap(cap,p)});
+    if(!p){s.remove();return}const cap=s.querySelector(".cap");
+    const ci=cap.querySelector(".cin input");if(ci&&ci.value&&document.activeElement===ci)return;cap.innerHTML=capHTML(p);wireCap(cap,p)});
   S.vlist=[...document.querySelectorAll("#viewer .slide")].map(s=>S.posts.find(p=>p.id===s.dataset.id));
   if(!S.vlist.length)closeViewer();else updPos();
 }
