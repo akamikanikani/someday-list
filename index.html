@@ -10,8 +10,8 @@
 <script>
 /* ▼▼ Supabase の接続情報：" " の中だけ書き換える ▼▼ */
 window.CONFIG = {
-  SUPABASE_URL: "https://wmacbyjfnkesiqvloiwp.supabase.co",
-  SUPABASE_KEY: "sb_publishable_QmlNduguSqyxp664FL1bZg__Q0HFC8W"
+  SUPABASE_URL: "ここにProject URL",
+  SUPABASE_KEY: "ここにPublishable key"
 };
 /* ▲▲ ここまで ▲▲ */
 </script>
@@ -354,7 +354,7 @@ textarea{resize:vertical;min-height:72px}
 .dk-rs{position:relative;display:flex;gap:12px}
 .dk-r{width:56px;height:56px;border-radius:50%;background:#fff;border:2px solid #fff;font-size:26px;display:grid;place-items:center;padding:0;box-shadow:0 4px 12px rgba(58,53,80,.12);transition:transform .15s,box-shadow .15s}
 .dk-r.hot{transform:scale(1.28);box-shadow:0 0 0 5px rgba(172,163,213,.45),0 6px 16px rgba(58,53,80,.18)}
-.dk-r.pop{animation:dkpop .45s}
+.dk-r.bump{animation:dkpop .45s}
 @keyframes dkpop{40%{transform:scale(1.45)}100%{transform:scale(1)}}
 .dk-r.plus{font-size:22px;color:var(--lav);border:2px dashed var(--lav)}
 .dk-emoji{position:absolute;right:0;bottom:calc(100% + 10px);width:5em;border:1.5px solid var(--lav);border-radius:999px;padding:6px 10px;font-size:18px;text-align:center;background:#fff}
@@ -363,7 +363,13 @@ textarea{resize:vertical;min-height:72px}
 .dk-done p{margin:0;color:var(--muted);font-size:13px;line-height:1.7}
 .dk-done .given{font-size:24px;letter-spacing:2px}
 body.deck-open .viewer{z-index:60}body.deck-open .vclose,body.deck-open .vpos{z-index:61}
-@media (prefers-reduced-motion:reduce){.dk-card.anim{transition:none}.dk-r.pop{animation:none}}
+@media (prefers-reduced-motion:reduce){.dk-card.anim{transition:none}.dk-r.bump{animation:none}}
+/* ---- emoji picker ---- */
+.epick{position:fixed;z-index:80;background:#fff;border:1.5px solid var(--pink);border-radius:18px;padding:10px;box-shadow:0 10px 30px rgba(58,53,80,.18);display:grid;gap:8px}
+.epick .eg{display:grid;grid-template-columns:repeat(6,1fr);gap:4px}
+.epick .eg button{border:none;background:none;font-size:24px;padding:4px 0;border-radius:10px}
+.epick .eg button:hover,.epick .eg button:focus-visible{background:var(--paper)}
+.epick .ein{border:1.5px solid #EAE6F7;border-radius:999px;padding:7px 12px;font:inherit;font-size:16px;background:#FCFBFF;color:var(--ink);width:100%}
 @media (prefers-reduced-motion:reduce){.pop,.card{transition:none}}
 </style>
 </head>
@@ -888,20 +894,32 @@ function dkAbsorb(btn,e){
   const cr=card.getBoundingClientRect(),br=btn.getBoundingClientRect();
   const x=(+card.dataset.x||0)+(br.left+br.width/2)-(cr.left+cr.width/2),y=(+card.dataset.y||0)+(br.top+br.height/2)-(cr.top+cr.height/2);
   card.classList.add("anim");card.style.transform=`translate(${x}px,${y}px) rotate(-12deg) scale(.06)`;card.style.opacity="0";
-  setTimeout(()=>{btn.classList.remove("pop");void btn.offsetWidth;btn.classList.add("pop");dkReact(e);dkAdvance()},320);
+  setTimeout(()=>{btn.classList.remove("bump");void btn.offsetWidth;btn.classList.add("bump");dkReact(e);dkAdvance()},320);
 }
 function dkFly(card,dir){card.dataset.busy="1";card.classList.add("anim");
   card.style.transform=`translate(${dir*innerWidth}px,${+card.dataset.y||0}px) rotate(${dir*25}deg)`;card.style.opacity="0";setTimeout(dkAdvance,300)}
-function dkPlus(plus){
-  if($("dkRs").querySelector(".dk-emoji"))return;
-  const inp=document.createElement("input");inp.className="dk-emoji";inp.type="text";inp.placeholder="😀";inp.setAttribute("aria-label","絵文字を入力");
-  $("dkRs").appendChild(inp);inp.focus();
-  inp.addEventListener("input",()=>{const e=firstEmoji(inp.value);if(e){inp.remove();dkAbsorb(plus,e)}});
-  inp.addEventListener("blur",()=>setTimeout(()=>inp.remove(),150));
+/* 絵文字を選ぶパレット（パソコンでもスマホでも使える） */
+const PICK=["😍","🥰","🥹","😂","😭","😮","🤤","😋","🔥","✨","💯","👍","👏","🙌","🫶","💖","💕","💜","🩵","🎉","🛒","💸","✈️","📍"];
+function emojiPicker(anchor,onPick){
+  closePicker();
+  const box=document.createElement("div");box.className="epick";box.id="epick";
+  box.innerHTML=`<div class="eg">${PICK.map(e=>`<button type="button" data-e="${e}">${e}</button>`).join("")}</div>
+    <input type="text" class="ein" placeholder="ほかの絵文字を入力" aria-label="ほかの絵文字を入力">`;
+  document.body.appendChild(box);
+  const r=anchor.getBoundingClientRect(),w=Math.min(300,innerWidth-24);box.style.width=w+"px";
+  box.style.left=Math.max(12,Math.min(innerWidth-w-12,r.left+r.width/2-w/2))+"px";
+  const h=box.offsetHeight;box.style.top=(r.top-h-10>8?r.top-h-10:r.bottom+10)+"px";
+  const pick=e=>{closePicker();onPick(e)};
+  box.querySelectorAll(".eg button").forEach(b=>b.onclick=ev=>{ev.stopPropagation();pick(b.dataset.e)});
+  const inp=box.querySelector(".ein");inp.addEventListener("input",()=>{const e=firstEmoji(inp.value);if(e)pick(e)});
+  box.addEventListener("pointerdown",ev=>ev.stopPropagation());
+  setTimeout(()=>document.addEventListener("pointerdown",closePicker,{once:true}),0);
 }
+function closePicker(){const b=$("epick");if(b)b.remove()}
+function dkPlus(plus){emojiPicker(plus,e=>dkAbsorb(plus,e))}
 function dkDrag(card){
   let sx=0,sy=0,dx=0,dy=0,moved=false,hot=null,id=null;
-  const targets=()=>[...$("dkRs").querySelectorAll(".dk-r[data-e]")];
+  const targets=()=>[...$("dkRs").querySelectorAll(".dk-r")];
   card.addEventListener("pointerdown",e=>{if(card.dataset.busy)return;id=e.pointerId;card.setPointerCapture(id);sx=e.clientX;sy=e.clientY;dx=dy=0;moved=false;card.classList.remove("anim")});
   card.addEventListener("pointermove",e=>{if(id!==e.pointerId)return;dx=e.clientX-sx;dy=e.clientY-sy;
     if(!moved&&Math.hypot(dx,dy)>6){moved=true;$("deck").classList.add("dragging")}
@@ -912,6 +930,7 @@ function dkDrag(card){
     card.dataset.x=dx;card.dataset.y=dy;card.style.transform=`translate(${dx}px,${dy}px) rotate(${dx*.06-1.2}deg) scale(${hot?.62:1})`});
   const end=e=>{if(id!==e.pointerId)return;id=null;$("deck").classList.remove("dragging");targets().forEach(b=>b.classList.remove("hot"));
     if(!moved){openViewer([DK.items[DK.i]],0);return}
+    if(hot&&hot.classList.contains("plus")){card.classList.add("anim");card.style.transform="";card.dataset.x=card.dataset.y=0;dkPlus(hot);return}
     if(hot){dkAbsorb(hot,hot.dataset.e);return}
     if(Math.abs(dx)>90){dkFly(card,dx>0?1:-1);return}
     card.classList.add("anim");card.style.transform="";card.dataset.x=card.dataset.y=0};
@@ -1082,15 +1101,7 @@ function wireCap(cap,p){
   cap.querySelectorAll(".stars.edit .st").forEach(b=>b.onclick=()=>{const r=+b.dataset.r;setRating(p,r===p.rating?null:r)});
   const pb=cap.querySelector(".pinbtn");if(pb)pb.onclick=()=>togglePin(p);
   const plus=cap.querySelector(".plus");
-  if(plus)plus.onclick=ev=>{ev.stopPropagation();
-    const inp=document.createElement("input");inp.className="emoji-in";inp.type="text";inp.placeholder="😀";inp.setAttribute("aria-label","絵文字を入力");inp.enterKeyHint="done";
-    plus.replaceWith(inp);inp.focus();
-    let fired=false;
-    const done=()=>{if(fired)return;fired=true;const e=firstEmoji(inp.value);if(e&&!myReact(p.id,e))toggleReact(p.id,e);else refreshViewerCaps()};
-    inp.addEventListener("input",()=>{if(firstEmoji(inp.value))done()});
-    inp.addEventListener("blur",()=>setTimeout(()=>{if(inp.isConnected&&!fired)refreshViewerCaps()},150));
-    inp.addEventListener("keydown",k=>{if(k.key==="Enter"){k.preventDefault();done()}});
-  };
+  if(plus)plus.onclick=ev=>{ev.stopPropagation();emojiPicker(plus,e=>{if(!myReact(p.id,e))toggleReact(p.id,e)})};
   const d=cap.querySelector(".del");if(d)d.onclick=ev=>{ev.stopPropagation();
     const w=document.createElement("span");w.className="confirm";w.innerHTML=`<span>削除しますか？</span><button class="yes">削除</button><button class="no">やめる</button>`;
     d.replaceWith(w);w.querySelector(".no").onclick=e=>{e.stopPropagation();refreshViewerCaps()};
