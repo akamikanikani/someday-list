@@ -10,8 +10,8 @@
 <script>
 /* ▼▼ Supabase の接続情報：" " の中だけ書き換える ▼▼ */
 window.CONFIG = {
-  SUPABASE_URL: "https://wmacbyjfnkesiqvloiwp.supabase.co",
-  SUPABASE_KEY: "sb_publishable_QmlNduguSqyxp664FL1bZg__Q0HFC8W"
+  SUPABASE_URL: "ここにProject URL",
+  SUPABASE_KEY: "ここにPublishable key"
 };
 /* ▲▲ ここまで ▲▲ */
 </script>
@@ -326,9 +326,9 @@ textarea{resize:vertical;min-height:72px}
 .newbtn span{display:inline-block;min-width:18px;margin-left:6px;padding:0 6px;border-radius:999px;background:#F08AA6;color:#fff;font-family:var(--body);font-size:11px;line-height:18px;vertical-align:.25em}
 .newbtn span:empty{display:none}
 #deck{position:fixed;inset:0;z-index:25;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none}
-.dk-bg{position:absolute;inset:0;background:var(--paper) url("bg.jpg") center/cover}
-.dk-blur{position:absolute;inset:-60px;background-size:cover;background-position:center;filter:blur(30px);opacity:.3;transition:opacity .4s}
-.dk-veil{position:absolute;inset:0;background:rgba(255,255,255,.42)}
+.dk-bg{position:absolute;inset:0;background:repeating-linear-gradient(180deg,#EDF9F5 0 10px,#fff 10px 20px)}
+.dk-blur{position:absolute;inset:-60px;background-size:cover;background-position:center;filter:blur(30px);opacity:.14;transition:opacity .4s}
+.dk-veil{position:absolute;inset:0;background:rgba(255,255,255,.12)}
 .dk-top{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:10px;z-index:4}
 .dk-prog{display:flex;gap:4px}.dk-prog i{flex:1;height:4px;border-radius:2px;background:rgba(172,163,213,.28)}.dk-prog i.on{background:var(--lav)}
 .dk-head{display:flex;justify-content:space-between;align-items:center}
