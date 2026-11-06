@@ -10,8 +10,8 @@
 <script>
 /* ▼▼ Supabase の接続情報：" " の中だけ書き換える ▼▼ */
 window.CONFIG = {
-  SUPABASE_URL: "https://wmacbyjfnkesiqvloiwp.supabase.co",
-  SUPABASE_KEY: "sb_publishable_QmlNduguSqyxp664FL1bZg__Q0HFC8W"
+  SUPABASE_URL: "ここにProject URL",
+  SUPABASE_KEY: "ここにPublishable key"
 };
 /* ▲▲ ここまで ▲▲ */
 </script>
@@ -320,6 +320,50 @@ textarea{resize:vertical;min-height:72px}
 .nitem .ntext small{display:block;color:var(--muted);font-size:11px}
 .nitem .nthumb{width:40px;height:52px;border-radius:3px;object-fit:cover;object-position:top;flex:none;border:1px solid var(--pink);background:var(--paper)}
 .nitem .dot{width:7px;height:7px;border-radius:50%;background:#F08AA6;flex:none}
+/* ---- new deck（めくって見る） ---- */
+.sortbar .sp{flex:1}
+.newbtn{border:1.5px solid var(--lav);background:#fff;color:var(--lav);border-radius:999px;padding:2px 14px 3px;font-family:var(--hand);font-size:22px;line-height:1.2}
+.newbtn span{display:inline-block;min-width:18px;margin-left:6px;padding:0 6px;border-radius:999px;background:#F08AA6;color:#fff;font-family:var(--body);font-size:11px;line-height:18px;vertical-align:.25em}
+.newbtn span:empty{display:none}
+#deck{position:fixed;inset:0;z-index:25;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none}
+.dk-bg{position:absolute;inset:0;background:var(--paper) url("bg.jpg") center/cover}
+.dk-blur{position:absolute;inset:-60px;background-size:cover;background-position:center;filter:blur(30px);opacity:.3;transition:opacity .4s}
+.dk-veil{position:absolute;inset:0;background:rgba(255,255,255,.42)}
+.dk-top{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:10px;z-index:4}
+.dk-prog{display:flex;gap:4px}.dk-prog i{flex:1;height:4px;border-radius:2px;background:rgba(172,163,213,.28)}.dk-prog i.on{background:var(--lav)}
+.dk-head{display:flex;justify-content:space-between;align-items:center}
+.dk-ttl{font-family:var(--hand);font-size:40px;color:var(--lav);-webkit-text-stroke:5px #fff;paint-order:stroke fill;line-height:1}
+.dk-ttl small{font-size:26px;margin-left:6px}
+.dk-later{border:1.5px solid var(--pink);background:#fff;border-radius:999px;padding:6px 14px;font-size:12px;color:var(--muted)}
+.dk-stage{position:absolute;left:0;right:0;top:calc(100px + env(safe-area-inset-top,0px));bottom:calc(140px + env(safe-area-inset-bottom,0px));display:flex;align-items:center;justify-content:center;z-index:3}
+.dk-stack{position:relative;display:grid;width:min(72vw,300px)}
+.dk-card{grid-area:1/1;align-self:center;background:#fff;border:1.5px solid var(--pink);border-radius:6px;padding:6px;box-shadow:0 12px 28px rgba(58,53,80,.14);touch-action:none;will-change:transform}
+.dk-card img{display:block;width:100%;aspect-ratio:3/4;max-height:46dvh;object-fit:cover;object-position:top;border-radius:3px;background:var(--paper);pointer-events:none}
+.dk-card .tape{top:-12px;font-size:22px}
+.dk-card.b1{transform:rotate(-3deg) translate(-6px,6px) scale(.96);opacity:.9}
+.dk-card.b2{transform:rotate(4deg) translate(8px,10px) scale(.92);opacity:.7}
+.dk-card.front{z-index:3;transform:rotate(-1.2deg)}
+.dk-card.anim{transition:transform .34s cubic-bezier(.3,.7,.3,1),opacity .34s}
+.dk-info{padding:8px 4px 2px;display:grid;gap:4px}
+.dk-who{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700}
+.dk-who .when{margin-left:auto;font-weight:400}
+.dk-info .note{font-size:13px;-webkit-line-clamp:2}
+.dk-dock{position:absolute;left:0;right:0;bottom:calc(24px + env(safe-area-inset-bottom,0px));display:grid;justify-items:center;gap:12px;z-index:2}
+.dk-hint{font-size:12px;color:var(--muted);background:rgba(255,255,255,.9);padding:4px 14px;border-radius:999px;opacity:0;transform:translateY(8px);transition:opacity .25s,transform .25s;pointer-events:none}
+#deck.dragging .dk-hint{opacity:1;transform:none}
+.dk-rs{position:relative;display:flex;gap:12px}
+.dk-r{width:56px;height:56px;border-radius:50%;background:#fff;border:2px solid #fff;font-size:26px;display:grid;place-items:center;padding:0;box-shadow:0 4px 12px rgba(58,53,80,.12);transition:transform .15s,box-shadow .15s}
+.dk-r.hot{transform:scale(1.28);box-shadow:0 0 0 5px rgba(172,163,213,.45),0 6px 16px rgba(58,53,80,.18)}
+.dk-r.pop{animation:dkpop .45s}
+@keyframes dkpop{40%{transform:scale(1.45)}100%{transform:scale(1)}}
+.dk-r.plus{font-size:22px;color:var(--lav);border:2px dashed var(--lav)}
+.dk-emoji{position:absolute;right:0;bottom:calc(100% + 10px);width:5em;border:1.5px solid var(--lav);border-radius:999px;padding:6px 10px;font-size:18px;text-align:center;background:#fff}
+.dk-done{grid-area:1/1;align-self:center;text-align:center;background:rgba(255,255,255,.94);border:1.5px solid var(--pink);border-radius:20px;padding:26px 18px;display:grid;gap:10px;justify-items:center}
+.dk-done b{font-family:var(--hand);font-weight:400;font-size:44px;color:var(--lav);line-height:1}
+.dk-done p{margin:0;color:var(--muted);font-size:13px;line-height:1.7}
+.dk-done .given{font-size:24px;letter-spacing:2px}
+body.deck-open .viewer{z-index:60}body.deck-open .vclose,body.deck-open .vpos{z-index:61}
+@media (prefers-reduced-motion:reduce){.dk-card.anim{transition:none}.dk-r.pop{animation:none}}
 @media (prefers-reduced-motion:reduce){.pop,.card{transition:none}}
 </style>
 </head>
@@ -369,7 +413,7 @@ textarea{resize:vertical;min-height:72px}
 <main class="wrap" id="app" hidden>
   <div class="status" id="status">loading…</div>
   <section id="home">
-    <div class="sortbar" role="group" aria-label="並び順"><button type="button" class="sortbtn" data-sort="new">新しい順</button><button type="button" class="sortbtn" data-sort="rate">★ 欲しい度順</button></div>
+    <div class="sortbar"><button type="button" class="newbtn" id="newBtn">new ✦<span id="newCount"></span></button><span class="sp"></span><button type="button" class="sortbtn" data-sort="new">新しい順</button><button type="button" class="sortbtn" data-sort="rate">★ 欲しい度順</button></div>
     <div class="feed" id="feed"></div>
     <div class="empty" id="empty" hidden><b>it’s empty!</b>気になったもののスクショを<br>右下の「+ add」から入れてみましょう。</div>
   </section>
@@ -474,6 +518,14 @@ textarea{resize:vertical;min-height:72px}
       <button type="button" class="btn pri" id="bsend" disabled>送る</button>
     </div>
   </div>
+</div>
+
+<div id="deck" hidden>
+  <div class="dk-bg"></div><div class="dk-blur" id="dkBlur"></div><div class="dk-veil"></div>
+  <div class="dk-top"><div class="dk-prog" id="dkProg"></div>
+    <div class="dk-head"><span class="dk-ttl" id="dkTtl">new</span><button type="button" class="dk-later" id="dkLater">あとで見る ✕</button></div></div>
+  <div class="dk-stage"><div class="dk-stack" id="dkStack"></div></div>
+  <div class="dk-dock" id="dkDock"><span class="dk-hint">引っ張ってリアクション</span><div class="dk-rs" id="dkRs"></div></div>
 </div>
 
 <div class="scrim" id="nscrim" hidden>
@@ -595,6 +647,7 @@ async function loadAll(){
   const need=[...S.posts.map(x=>x.path),...(pr.data||[]).map(x=>x.avatar_path).filter(Boolean)].filter(x=>!S.urls[x]);
   if(need.length){const {data}=await sb.storage.from("shots").createSignedUrls(need,60*60*6);(data||[]).forEach(d=>{if(d.signedUrl)S.urls[d.path]=d.signedUrl})}
   $("status").hidden=true;render();
+  if(!firstLoadDone){firstLoadDone=true;if(S.view==="home"&&unseenPosts().length)openDeck()}
 }
 let reloadT;function scheduleReload(){clearTimeout(reloadT);reloadT=setTimeout(loadAll,300)}
 let started=false;
@@ -651,7 +704,7 @@ function render(){
   const home=S.view==="home";
   $("home").hidden=!home;$("profile").hidden=home;$("tabs").hidden=!home;$("people").hidden=!home;$("groups").hidden=!home;
   const meBtn=$("meBtn");meBtn.textContent="";if(S.me){meBtn.appendChild(avatar(S.me))}
-  renderBell();
+  renderBell();renderNewBtn();
   if(home)renderHome();else renderProfile(S.view);
   if(!$("viewer").hidden)refreshViewerCaps();
 }
@@ -783,6 +836,87 @@ $("gform").addEventListener("submit",async e=>{e.preventDefault();
     const g=S.groups.find(x=>x.id===data);if(g){openGroupSheet(g)}return}
   $("gscrim").hidden=true;loadAll();
 });
+
+/* ---------- new deck（めくって見る） ---------- */
+let deckSeen=null;try{deckSeen=localStorage.getItem("sl_deck")}catch(e){}
+if(!deckSeen){deckSeen=new Date(Date.now()-3*864e5).toISOString()}
+const DK={items:[],i:0,review:false,given:[]};let firstLoadDone=false;
+function friendPosts(){const myG=new Set(S.groups.map(g=>g.id));const seen=new Set();
+  return S.posts.filter(p=>p.user_id!==S.me&&myG.has(p.group_id)&&!seen.has(p.user_id+p.path)&&seen.add(p.user_id+p.path))
+    .sort((a,b)=>new Date(a.created_at)-new Date(b.created_at))}
+const unseenPosts=()=>friendPosts().filter(p=>p.created_at>deckSeen);
+function renderNewBtn(){const n=unseenPosts().length;$("newCount").textContent=n?(n>99?"99+":n):""}
+function openDeck(){
+  let items=unseenPosts();DK.review=!items.length;if(DK.review)items=friendPosts().slice(-10);
+  if(!items.length){toast("まだ友だちのスクショはありません");return}
+  Object.assign(DK,{items,i:0,given:[]});
+  const rs=$("dkRs");rs.textContent="";
+  QUICK.forEach(e=>{const b=document.createElement("button");b.type="button";b.className="dk-r";b.dataset.e=e;b.textContent=e;b.onclick=()=>dkAbsorb(b,e);rs.appendChild(b)});
+  const plus=document.createElement("button");plus.type="button";plus.className="dk-r plus";plus.textContent="＋";plus.setAttribute("aria-label","ほかの絵文字");plus.onclick=()=>dkPlus(plus);rs.appendChild(plus);
+  $("deck").hidden=false;document.body.classList.add("deck-open");document.body.style.overflow="hidden";renderDeck();
+}
+function closeDeck(){$("deck").hidden=true;document.body.classList.remove("deck-open");document.body.style.overflow="";render()}
+$("dkLater").onclick=closeDeck;$("newBtn").onclick=openDeck;
+function dkCard(p,cls){const c=document.createElement("div");c.className="dk-card "+cls;
+  const tape=document.createElement("span");tape.className="tape";tape.innerHTML=catHTML(p.cat);paint(tape,p.cat);c.appendChild(tape);
+  const im=document.createElement("img");im.src=S.urls[p.path]||"";im.alt=p.note||"スクショ";im.draggable=false;c.appendChild(im);
+  const info=document.createElement("div");info.className="dk-info";
+  info.innerHTML=`<div class="dk-who"><span class="slot"></span>${esc(nameOf(p.user_id))}<span class="when">${when(p.created_at)}</span></div>`+(p.rating?starsHTML(p.rating):"")+(p.note?`<div class="note">${esc(p.note)}</div>`:"");
+  info.querySelector(".slot").replaceWith(avatar(p.user_id));c.appendChild(info);return c}
+function renderDeck(){
+  const n=DK.items.length,i=DK.i;const prog=$("dkProg");prog.textContent="";
+  for(let k=0;k<n&&n<=30;k++){const d=document.createElement("i");if(k<=i)d.className="on";prog.appendChild(d)}
+  const st=$("dkStack");st.textContent="";$("deck").classList.remove("dragging");
+  if(i>=n){
+    $("dkTtl").innerHTML="new";$("dkBlur").style.backgroundImage="none";$("dkDock").hidden=true;
+    const d=document.createElement("div");d.className="dk-done";
+    d.innerHTML=`<b>all caught up!</b><p>${DK.review?"最近のスクショを見終わりました。":"新しいスクショをぜんぶ見ました。"}</p>`+(DK.given.length?`<div class="given">${DK.given.map(esc).join("")}</div>`:"")+`<button class="btn pri small" type="button">一覧を見る</button>`;
+    d.querySelector("button").onclick=closeDeck;st.appendChild(d);return}
+  $("dkDock").hidden=false;
+  $("dkTtl").innerHTML=`new<small>${i+1} / ${n}</small>`;
+  const u=S.urls[DK.items[i].path];$("dkBlur").style.backgroundImage=u?`url("${u}")`:"none";
+  if(DK.items[i+2])st.appendChild(dkCard(DK.items[i+2],"b2"));
+  if(DK.items[i+1])st.appendChild(dkCard(DK.items[i+1],"b1"));
+  const top=dkCard(DK.items[i],"front");st.appendChild(top);dkDrag(top);
+}
+function dkAdvance(){const p=DK.items[DK.i];
+  if(!DK.review&&p&&p.created_at>deckSeen){deckSeen=p.created_at;try{localStorage.setItem("sl_deck",deckSeen)}catch(e){}}
+  DK.i++;renderDeck();renderNewBtn()}
+function dkReact(e){const p=DK.items[DK.i];if(!p)return;DK.given.push(e);if(!myReact(p.id,e))toggleReact(p.id,e)}
+function dkAbsorb(btn,e){
+  const card=$("dkStack").querySelector(".dk-card.front");if(!card||card.dataset.busy)return;card.dataset.busy="1";
+  const cr=card.getBoundingClientRect(),br=btn.getBoundingClientRect();
+  const x=(+card.dataset.x||0)+(br.left+br.width/2)-(cr.left+cr.width/2),y=(+card.dataset.y||0)+(br.top+br.height/2)-(cr.top+cr.height/2);
+  card.classList.add("anim");card.style.transform=`translate(${x}px,${y}px) rotate(-12deg) scale(.06)`;card.style.opacity="0";
+  setTimeout(()=>{btn.classList.remove("pop");void btn.offsetWidth;btn.classList.add("pop");dkReact(e);dkAdvance()},320);
+}
+function dkFly(card,dir){card.dataset.busy="1";card.classList.add("anim");
+  card.style.transform=`translate(${dir*innerWidth}px,${+card.dataset.y||0}px) rotate(${dir*25}deg)`;card.style.opacity="0";setTimeout(dkAdvance,300)}
+function dkPlus(plus){
+  if($("dkRs").querySelector(".dk-emoji"))return;
+  const inp=document.createElement("input");inp.className="dk-emoji";inp.type="text";inp.placeholder="😀";inp.setAttribute("aria-label","絵文字を入力");
+  $("dkRs").appendChild(inp);inp.focus();
+  inp.addEventListener("input",()=>{const e=firstEmoji(inp.value);if(e){inp.remove();dkAbsorb(plus,e)}});
+  inp.addEventListener("blur",()=>setTimeout(()=>inp.remove(),150));
+}
+function dkDrag(card){
+  let sx=0,sy=0,dx=0,dy=0,moved=false,hot=null,id=null;
+  const targets=()=>[...$("dkRs").querySelectorAll(".dk-r[data-e]")];
+  card.addEventListener("pointerdown",e=>{if(card.dataset.busy)return;id=e.pointerId;card.setPointerCapture(id);sx=e.clientX;sy=e.clientY;dx=dy=0;moved=false;card.classList.remove("anim")});
+  card.addEventListener("pointermove",e=>{if(id!==e.pointerId)return;dx=e.clientX-sx;dy=e.clientY-sy;
+    if(!moved&&Math.hypot(dx,dy)>6){moved=true;$("deck").classList.add("dragging")}
+    if(!moved)return;
+    hot=null;let best=80;targets().forEach(b=>{const r=b.getBoundingClientRect();const d=Math.hypot(e.clientX-(r.left+r.width/2),e.clientY-(r.top+r.height/2));
+      b.classList.toggle("hot",false);if(d<best){best=d;hot=b}});
+    if(hot)hot.classList.add("hot");
+    card.dataset.x=dx;card.dataset.y=dy;card.style.transform=`translate(${dx}px,${dy}px) rotate(${dx*.06-1.2}deg) scale(${hot?.62:1})`});
+  const end=e=>{if(id!==e.pointerId)return;id=null;$("deck").classList.remove("dragging");targets().forEach(b=>b.classList.remove("hot"));
+    if(!moved){openViewer([DK.items[DK.i]],0);return}
+    if(hot){dkAbsorb(hot,hot.dataset.e);return}
+    if(Math.abs(dx)>90){dkFly(card,dx>0?1:-1);return}
+    card.classList.add("anim");card.style.transform="";card.dataset.x=card.dataset.y=0};
+  card.addEventListener("pointerup",end);card.addEventListener("pointercancel",end);
+}
 
 /* ---------- notifications ---------- */
 let seenAt=null;try{seenAt=localStorage.getItem("sl_seen")}catch(e){}
