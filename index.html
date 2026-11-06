@@ -10,13 +10,13 @@
 <script>
 /* ▼▼ Supabase の接続情報：" " の中だけ書き換える ▼▼ */
 window.CONFIG = {
-  SUPABASE_URL: "https://wmacbyjfnkesiqvloiwp.supabase.co",
-  SUPABASE_KEY: "sb_publishable_QmlNduguSqyxp664FL1bZg__Q0HFC8W"
+  SUPABASE_URL: "ここにProject URL",
+  SUPABASE_KEY: "ここにPublishable key"
 };
 /* ▲▲ ここまで ▲▲ */
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&family=Zen+Maru+Gothic:wght@500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&family=Kiwi+Maru:wght@400;500&display=swap">
 <style>
 /* 明るいスクラップブック風：ミントの星柄背景 / 白い写真カードを少し傾けて / ラベンダーの手書き文字 / ホログラムのマスキングテープ */
 :root{
@@ -28,8 +28,8 @@ window.CONFIG = {
   --pink:#E2E0E6;       /* カードのふち（薄いグレー） */
   --check:linear-gradient(90deg,rgba(150,141,191,.22) 50%,transparent 50%) 0 0/10px 10px,linear-gradient(rgba(150,141,191,.22) 50%,transparent 50%) 0 0/10px 10px,#fff;
   --holo:linear-gradient(100deg,#FBD3E9 0%,#DCD6FF 30%,#D2F1FF 55%,#E3FFE9 75%,#FFF2C2 100%);
-  --hand:"Nanum Pen Script","Zen Maru Gothic",cursive;
-  --body:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Hiragino Sans",system-ui,sans-serif;
+  --hand:"Nanum Pen Script","Kiwi Maru",cursive;
+  --body:"Kiwi Maru","Hiragino Maru Gothic ProN","Hiragino Sans",system-ui,sans-serif;
   color-scheme:light;
   padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);
 }
@@ -291,6 +291,15 @@ textarea{resize:vertical;min-height:72px}
 .ed-top .ttl{font-size:32px}
 .empty,.hint{border-color:var(--pink)}
 .pick{border-color:#D9D6E0;background:#FAFAFC}
+/* ==== テープ：角なし・少し透ける・端をちぎった形 ==== */
+.tape,.tab[aria-pressed="true"]{border-radius:0;
+  clip-path:polygon(0 4%,3% 0,6% 6%,9% 1%,91% 0,94% 5%,97% 0,100% 6%,100% 94%,97% 100%,94% 95%,91% 100%,9% 99%,6% 94%,3% 100%,0 95%)}
+.tape{box-shadow:none;background:var(--bg,rgba(255,255,255,.8))}
+.tape::after,.tab[aria-pressed="true"]::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.35;
+  background:repeating-linear-gradient(90deg,rgba(255,255,255,.55) 0 1px,transparent 1px 4px)}
+.tab{position:relative;border-radius:0}
+.tab[aria-pressed="true"]{box-shadow:none}
+.tab.all[aria-pressed="true"]{background:linear-gradient(90deg,rgba(150,141,191,.22) 50%,transparent 50%) 0 0/10px 10px,linear-gradient(rgba(150,141,191,.22) 50%,transparent 50%) 0 0/10px 10px,rgba(255,255,255,.75)}
 @media (prefers-reduced-motion:reduce){.pop,.card{transition:none}}
 </style>
 </head>
@@ -463,10 +472,10 @@ textarea{resize:vertical;min-height:72px}
 /* ===== 表示の設定（ここを書き換えると見た目が変わります） =====
    label：表示名。手書き画像ができたら img に画像ファイル名を入れる（例 "things.png"） */
 const CATS={
-  want:{label:"Things", emoji:"🎀", bg:"#FBE3EA", fg:"#C7647D", img:""},
-  wear:{label:"Clothes",emoji:"👕", bg:"#E1ECFA", fg:"#5A88C2", img:""},
-  go:  {label:"Places", emoji:"🏝️", bg:"#DFF3E9", fg:"#4A9A7B", img:""},
-  eat: {label:"Yummy",  emoji:"🍮", bg:"#FBEFD7", fg:"#B5873A", img:""}
+  want:{label:"Things", emoji:"🫧", bg:"#FCEBF0", fg:"#E0A0B0", img:""},
+  wear:{label:"Clothes",emoji:"👕", bg:"#E9F1FB", fg:"#93B2D9", img:""},
+  go:  {label:"Places", emoji:"🏝️", bg:"#E7F6EF", fg:"#84C0A6", img:""},
+  eat: {label:"Yummy",  emoji:"🍮", bg:"#FCF4E3", fg:"#D2B277", img:""}
 };
 const QUICK=["❤️","🥹","🤩","👀"];   /* すぐ押せるリアクション */
 const COLORS=["#8E7BEF","#F28DB2","#5CC3B8","#F5A54A","#6AA8F0","#B48CE0"];
@@ -477,7 +486,8 @@ try{S.group=localStorage.getItem("sl_group")}catch(e){}
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const catHTML=c=>CATS[c]?(CATS[c].img?`<img src="${esc(CATS[c].img)}" alt="${esc(CATS[c].label)}">`:`<span class="ce">${CATS[c].emoji||""}</span>${esc(CATS[c].label)}`):"";
-const paint=(el,c)=>{if(CATS[c]){el.style.setProperty("--c",CATS[c].fg);el.style.setProperty("--bg",CATS[c].bg)}return el};
+const rgba=(hex,a)=>{const n=parseInt(hex.slice(1),16);return `rgba(${n>>16},${n>>8&255},${n&255},${a})`};
+const paint=(el,c)=>{if(CATS[c]){el.style.setProperty("--c",CATS[c].fg);el.style.setProperty("--bg",rgba(CATS[c].bg,.8))}return el};
 const uuid=()=>crypto.randomUUID?crypto.randomUUID():Date.now()+"-"+Math.random().toString(36).slice(2);
 function when(iso){const t=new Date(iso).getTime();const d=(Date.now()-t)/1000;if(d<60)return"just now";if(d<3600)return Math.floor(d/60)+"m ago";if(d<86400)return Math.floor(d/3600)+"h ago";
   const x=new Date(t),n=new Date();return (x.getFullYear()!==n.getFullYear()?x.getFullYear()+"/":"")+(x.getMonth()+1)+"/"+x.getDate()+" "+x.getHours()+":"+String(x.getMinutes()).padStart(2,"0")}
