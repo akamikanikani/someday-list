@@ -10,13 +10,13 @@
 <script>
 /* ▼▼ Supabase の接続情報：" " の中だけ書き換える ▼▼ */
 window.CONFIG = {
-  SUPABASE_URL: "https://wmacbyjfnkesiqvloiwp.supabase.co",
-  SUPABASE_KEY: "sb_publishable_QmlNduguSqyxp664FL1bZg__Q0HFC8W"
+  SUPABASE_URL: "ここにProject URL",
+  SUPABASE_KEY: "ここにPublishable key"
 };
 /* ▲▲ ここまで ▲▲ */
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&family=Kiwi+Maru:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&family=Kosugi+Maru&display=swap">
 <style>
 /* 明るいスクラップブック風：ミントの星柄背景 / 白い写真カードを少し傾けて / ラベンダーの手書き文字 / ホログラムのマスキングテープ */
 :root{
@@ -28,8 +28,8 @@ window.CONFIG = {
   --pink:#E2E0E6;       /* カードのふち（薄いグレー） */
   --check:linear-gradient(90deg,rgba(150,141,191,.22) 50%,transparent 50%) 0 0/10px 10px,linear-gradient(rgba(150,141,191,.22) 50%,transparent 50%) 0 0/10px 10px,#fff;
   --holo:linear-gradient(100deg,#FBD3E9 0%,#DCD6FF 30%,#D2F1FF 55%,#E3FFE9 75%,#FFF2C2 100%);
-  --hand:"Nanum Pen Script","Kiwi Maru",cursive;
-  --body:"Kiwi Maru","Hiragino Maru Gothic ProN","Hiragino Sans",system-ui,sans-serif;
+  --hand:"Nanum Pen Script","Kosugi Maru",cursive;
+  --body:"Kosugi Maru","Hiragino Maru Gothic ProN","Hiragino Sans",system-ui,sans-serif;
   color-scheme:light;
   padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);
 }
@@ -201,6 +201,9 @@ textarea{resize:vertical;min-height:72px}
 .grp{flex:none;border:1.5px solid #E6E2F5;background:rgba(255,255,255,.85);border-radius:999px;padding:5px 14px;font-weight:700;font-size:13px;color:var(--muted)}
 .grp[aria-pressed="true"]{background:var(--lav);border-color:var(--lav);color:#fff}
 .grp.icon{padding:5px 11px;color:var(--lav);border-style:dashed;border-color:var(--lav)}
+.sortbar{display:flex;gap:6px;justify-content:flex-end;margin:4px 0 6px}
+.sortbtn{border:1.5px solid var(--pink);background:rgba(255,255,255,.85);border-radius:999px;padding:4px 12px;font-size:12px;color:var(--muted)}
+.sortbtn[aria-pressed="true"]{background:var(--lav);border-color:var(--lav);color:#fff}
 .gpick{display:flex;gap:6px;flex-wrap:wrap}
 .addto{font-size:13px;color:var(--muted)}.addto b{color:var(--lav)}
 .mlist{display:grid;gap:6px;margin:0;padding:0;list-style:none}
@@ -300,6 +303,9 @@ textarea{resize:vertical;min-height:72px}
 .tab{position:relative;border-radius:0}
 .tab[aria-pressed="true"]{box-shadow:none}
 .tab.all[aria-pressed="true"]{background:linear-gradient(90deg,rgba(150,141,191,.22) 50%,transparent 50%) 0 0/10px 10px,linear-gradient(rgba(150,141,191,.22) 50%,transparent 50%) 0 0/10px 10px,rgba(255,255,255,.75)}
+/* ==== 小さい英語（時間・件数）は日本語と同じ字体 ==== */
+.when,.count{font-family:var(--body)}
+.when{font-size:12px}.feed .when{font-size:10px}.count{font-size:14px}
 @media (prefers-reduced-motion:reduce){.pop,.card{transition:none}}
 </style>
 </head>
@@ -347,16 +353,18 @@ textarea{resize:vertical;min-height:72px}
 <main class="wrap" id="app" hidden>
   <div class="status" id="status">loading…</div>
   <section id="home">
+    <div class="sortbar" role="group" aria-label="並び順"><button type="button" class="sortbtn" data-sort="new">新しい順</button><button type="button" class="sortbtn" data-sort="rate">★ 欲しい度順</button></div>
     <div class="feed" id="feed"></div>
-    <div class="empty" id="empty" hidden><b>nothing yet!</b>気になったもののスクショを<br>右下の「+ add」から入れてみましょう。</div>
+    <div class="empty" id="empty" hidden><b>it’s empty!</b>気になったもののスクショを<br>右下の「+ add」から入れてみましょう。</div>
   </section>
   <section id="profile" hidden>
-    <button class="back" onclick="location.hash=''">← back</button>
+    <button class="back" onclick="location.hash=''">← もどる</button>
     <div class="pfhead" id="pfHead"></div>
-    <h2 class="sec-title">pinned ★</h2>
+    <h2 class="sec-title">my favorites</h2>
     <div class="pinrow" id="pinRow"></div>
     <p class="hint" id="pinEmpty" hidden></p>
-    <h2 class="sec-title">all posts</h2>
+    <h2 class="sec-title">my list</h2>
+    <div class="sortbar" role="group" aria-label="並び順"><button type="button" class="sortbtn" data-sort="new">新しい順</button><button type="button" class="sortbtn" data-sort="rate">★ 欲しい度順</button></div>
     <div class="feed" id="pfFeed"></div>
     <p class="hint" id="pfEmpty" hidden>まだ投稿がありません。</p>
   </section>
@@ -371,7 +379,7 @@ textarea{resize:vertical;min-height:72px}
 
 <div class="scrim" id="scrim" hidden>
   <form class="sheet" id="form" autocomplete="off">
-    <h2>add to list</h2>
+    <h2>new item</h2>
     <label class="pick">
       <input type="file" id="file" accept="image/*" multiple>
       <span id="pickText">タップして画像を選ぶ（複数OK）</span>
@@ -439,7 +447,7 @@ textarea{resize:vertical;min-height:72px}
 
 <div class="scrim" id="bscrim" hidden>
   <div class="sheet">
-    <h2>share to group</h2>
+    <h2>send to group</h2>
     <p class="addto" id="btitle"></p>
     <div class="bbar"><span id="bcount">0枚選択中</span><button type="button" class="linkbtn" id="ball">すべて選ぶ</button></div>
     <div class="bgrid" id="bgrid"></div>
@@ -454,7 +462,7 @@ textarea{resize:vertical;min-height:72px}
 
 <div class="scrim" id="pscrim" hidden>
   <form class="sheet" id="pform" autocomplete="off">
-    <h2>my profile</h2>
+    <h2>edit profile</h2>
     <div class="avpick"><span id="eavPrev"></span><label>アイコンを選ぶ<input type="file" id="eavFile" accept="image/*"></label></div>
     <div><label class="lbl" for="ename">名前</label><input class="tin" type="text" id="ename" maxlength="12" required></div>
     <div><label class="lbl" for="ebio">ひとこと</label><textarea id="ebio" maxlength="80" placeholder="例：最近はインテリア雑貨が気になる"></textarea></div>
@@ -482,7 +490,8 @@ const COLORS=["#8E7BEF","#F28DB2","#5CC3B8","#F5A54A","#6AA8F0","#B48CE0"];
 /* ============================================================ */
 
 const S={posts:[],reacts:[],profiles:{},urls:{},cat:"all",person:"all",me:null,files:[],newCat:"want",newRating:0,vlist:[],color:COLORS[0],view:"home",avatarFile:null,groups:[],gm:[],group:null,myEmail:"",comments:[]};
-try{S.group=localStorage.getItem("sl_group")}catch(e){}
+try{S.group=localStorage.getItem("sl_group");S.sort=localStorage.getItem("sl_sort")||"new"}catch(e){S.sort="new"}
+const sortList=list=>S.sort==="rate"?[...list].sort((a,b)=>(b.rating||0)-(a.rating||0)||new Date(b.created_at)-new Date(a.created_at)):list;
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const catHTML=c=>CATS[c]?(CATS[c].img?`<img src="${esc(CATS[c].img)}" alt="${esc(CATS[c].label)}">`:`<span class="ce">${CATS[c].emoji||""}</span>${esc(CATS[c].label)}`):"";
@@ -584,7 +593,7 @@ const goProfile=id=>{location.hash=id===S.me?"me":"user-"+id};
 $("logoBtn").onclick=()=>{location.hash=""};
 $("meBtn").onclick=()=>goProfile(S.me);
 
-function filtered(){return S.posts.filter(p=>p.group_id===S.group&&(S.cat==="all"||p.cat===S.cat)&&(S.person==="all"||p.user_id===S.person))}
+function filtered(){return sortList(S.posts.filter(p=>p.group_id===S.group&&(S.cat==="all"||p.cat===S.cat)&&(S.person==="all"||p.user_id===S.person)))}
 function reactCounts(pid){const m=new Map();for(const r of S.reacts)if(r.post_id===pid)m.set(r.emoji,(m.get(r.emoji)||0)+1);return m}
 function myReact(pid,e){return S.reacts.some(r=>r.post_id===pid&&r.emoji===e&&r.user_id===S.me)}
 
@@ -592,9 +601,9 @@ function renderPeople(){
   const box=$("people");box.textContent="";const ids=[...new Set(S.posts.filter(p=>p.group_id===S.group).map(p=>p.user_id))];
   const mk=(id,label,av)=>{const b=document.createElement("button");b.className="person";b.setAttribute("aria-pressed",String(S.person===id));
     b.appendChild(av);const s=document.createElement("span");s.textContent=label;b.appendChild(s);b.onclick=()=>{S.person=id;render()};box.appendChild(b)};
-  const all=document.createElement("span");all.className="av all";all.textContent="★";mk("all","everyone",all);
+  const all=document.createElement("span");all.className="av all";all.textContent="★";mk("all","みんな",all);
   ids.sort((a,b)=>(b===S.me)-(a===S.me)).forEach(id=>mk(id,nameOf(id),avatar(id)));
-  if(S.person!=="all"){const g=document.createElement("button");g.className="person go";g.textContent="profile →";g.onclick=()=>goProfile(S.person);box.appendChild(g)}
+  if(S.person!=="all"){const g=document.createElement("button");g.className="person go";g.textContent="プロフィール →";g.onclick=()=>goProfile(S.person);box.appendChild(g)}
   box.hidden=!ids.length;
 }
 function makeCard(p,list,i){
@@ -611,7 +620,9 @@ function makeCard(p,list,i){
   if(rc.size||cn){const rx=document.createElement("div");rx.className="rx";rx.innerHTML=[...rc].map(([e,n])=>`<span>${esc(e)} ${n}</span>`).join("")+(cn?`<span class="cc">💬 ${cn}</span>`:"");b.appendChild(rx)}
   c.appendChild(b);c.onclick=()=>openViewer(list,i);return c;
 }
+document.querySelectorAll(".sortbtn").forEach(b=>b.onclick=()=>{S.sort=b.dataset.sort;try{localStorage.setItem("sl_sort",S.sort)}catch(e){}render()});
 function render(){
+  document.querySelectorAll(".sortbtn").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.sort===S.sort)));
   const home=S.view==="home";
   $("home").hidden=!home;$("profile").hidden=home;$("tabs").hidden=!home;$("people").hidden=!home;$("groups").hidden=!home;
   const meBtn=$("meBtn");meBtn.textContent="";if(S.me){meBtn.appendChild(avatar(S.me))}
@@ -623,7 +634,7 @@ function renderGroups(){
   S.groups.forEach(g=>{const b=document.createElement("button");b.className="grp";b.textContent=g.name;b.setAttribute("aria-pressed",String(g.id===S.group));
     b.onclick=()=>{if(g.id===S.group)openGroupSheet(g);else{setGroup(g.id);S.person="all";render()}};box.appendChild(b)});
   if(S.group){const s=document.createElement("button");s.className="grp icon";s.textContent="⚙";s.setAttribute("aria-label","グループの設定");s.onclick=()=>openGroupSheet(S.groups.find(x=>x.id===S.group));box.appendChild(s)}
-  const n=document.createElement("button");n.className="grp icon";n.textContent="＋ group";n.onclick=()=>openGroupSheet(null);box.appendChild(n);
+  const n=document.createElement("button");n.className="grp icon";n.textContent="＋ グループ";n.onclick=()=>openGroupSheet(null);box.appendChild(n);
 }
 function setGroup(id,quiet){S.group=id;try{id?localStorage.setItem("sl_group",id):localStorage.removeItem("sl_group")}catch(e){}}
 function renderHome(){
@@ -633,14 +644,14 @@ function renderHome(){
   const feed=$("feed");feed.textContent="";
   list.forEach((p,i)=>feed.appendChild(makeCard(p,list,i)));
   const em=$("empty");em.hidden=list.length>0;
-  if(!S.group)em.innerHTML="<b>make a group!</b>上の「＋ group」からグループを作りましょう。";
-  else if(S.posts.some(p=>p.group_id===S.group)&&!list.length)em.innerHTML="<b>nothing here</b>タブや人を切り替えてみてください。";
-  else if(bulkCandidates(S.group).length){em.innerHTML='<b>nothing yet!</b>過去のスクショをまとめて送れます。<br><button class="btn pri small" style="margin-top:10px" id="emptyBulk">🗂 過去のスクショを送る</button>';$("emptyBulk").onclick=()=>openBulk(S.group)}
-  else em.innerHTML="<b>nothing yet!</b>気になったもののスクショを<br>右下の「+ add」から入れてみましょう。";
+  if(!S.group)em.innerHTML="<b>make a group!</b>上の「＋ グループ」からグループを作りましょう。";
+  else if(S.posts.some(p=>p.group_id===S.group)&&!list.length)em.innerHTML="<b>no items here</b>タブや人を切り替えてみてください。";
+  else if(bulkCandidates(S.group).length){em.innerHTML='<b>it’s empty!</b>過去のスクショをまとめて送れます。<br><button class="btn pri small" style="margin-top:10px" id="emptyBulk">🗂 過去のスクショを送る</button>';$("emptyBulk").onclick=()=>openBulk(S.group)}
+  else em.innerHTML="<b>it’s empty!</b>気になったもののスクショを<br>右下の「+ add」から入れてみましょう。";
 }
 function renderProfile(uid){
   const pf=S.profiles[uid];const mine=uid===S.me;
-  const seen=new Set();const posts=S.posts.filter(p=>p.user_id===uid&&!seen.has(p.path)&&seen.add(p.path));const pins=posts.filter(p=>p.pinned);
+  const seen=new Set();const posts=sortList(S.posts.filter(p=>p.user_id===uid&&!seen.has(p.path)&&seen.add(p.path)));const pins=posts.filter(p=>p.pinned);
   $("count").textContent=posts.length+" items";
   const head=$("pfHead");head.textContent="";
   const av=avatar(uid,"lg");head.appendChild(av);
@@ -652,7 +663,7 @@ function renderProfile(uid){
   const row=$("pinRow");row.textContent="";
   pins.forEach((p,i)=>row.appendChild(makeCard(p,pins,i)));
   $("pinEmpty").hidden=pins.length>0;
-  $("pinEmpty").textContent=mine?"スクショを開いて「📌 pin」を押すと、ここに並びます。":"まだピン留めがありません。";
+  $("pinEmpty").textContent=mine?"スクショを開いて「📌 ピン留めする」を押すと、ここに並びます。":"まだピン留めがありません。";
   const grid=$("pfFeed");grid.textContent="";posts.forEach((p,i)=>grid.appendChild(makeCard(p,posts,i)));
   $("pfEmpty").hidden=posts.length>0;
 }
@@ -854,7 +865,7 @@ function capHTML(p){
      :`<div class="rbar">${list.map(e=>`<button class="rbtn" data-e="${esc(e)}" aria-pressed="${myReact(p.id,e)}">${esc(e)}<small>${rc.get(e)||""}</small></button>`).join("")}`+
       `<button class="rbtn plus" aria-label="ほかの絵文字でリアクション">＋</button></div>`)+
    commentsHTML(p)+
-   (mine?`<div class="tools"><button class="pinbtn" aria-pressed="${!!p.pinned}">${p.pinned?"📌 pinned":"📌 pin"}</button><button class="del">削除</button></div>`:"");
+   (mine?`<div class="tools"><button class="pinbtn" aria-pressed="${!!p.pinned}">${p.pinned?"📌 ピン留め中":"📌 ピン留めする"}</button><button class="del">削除</button></div>`:"");
 }
 function commentsHTML(p){
   const cs=S.comments.filter(c=>c.post_id===p.id);
@@ -952,7 +963,7 @@ async function deletePost(p){
 
 /* ---------- add sheet ---------- */
 function renderGpick(){const box=$("gpick");box.textContent="";
-  if(!S.groups.length){box.innerHTML='<span class="addto">先に上の「＋ group」でグループを作ってください。</span>';return}
+  if(!S.groups.length){box.innerHTML='<span class="addto">先に上の「＋ グループ」でグループを作ってください。</span>';return}
   S.groups.forEach(g=>{const b=document.createElement("button");b.type="button";b.className="grp";b.textContent=(S.sendGroups.has(g.id)?"✓ ":"")+g.name;
     b.setAttribute("aria-pressed",String(S.sendGroups.has(g.id)));
     b.onclick=()=>{S.sendGroups.has(g.id)?S.sendGroups.delete(g.id):S.sendGroups.add(g.id);renderGpick()};box.appendChild(b)})}
